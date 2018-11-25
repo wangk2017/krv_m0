@@ -1,0 +1,15 @@
+#=======================================================================
+# Makefrag for rv32m tests
+#-----------------------------------------------------------------------
+
+rv32m_sc_tests = \
+	csrrw \
+	csrrs \
+	csrrc \
+	csrrwi \
+	csrrsi \
+	csrrci \
+
+rv32m_m_tests = $(addprefix rv32m-m-, $(rv32m_sc_tests))
+
+spike_tests += $(rv32m_m_tests)

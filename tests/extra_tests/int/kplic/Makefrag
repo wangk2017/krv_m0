@@ -1,0 +1,10 @@
+#=======================================================================
+# Makefrag for kplic tests
+#-----------------------------------------------------------------------
+
+kplic_sc_tests = \
+	simple \
+
+kplic_m_tests = $(addprefix kplic-m-, $(kplic_sc_tests))
+
+spike32_tests += $(kplic_m_tests)

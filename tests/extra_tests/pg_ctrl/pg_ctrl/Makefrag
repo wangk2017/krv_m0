@@ -1,0 +1,10 @@
+#=======================================================================
+# Makefrag for pg_ctrl tests
+#-----------------------------------------------------------------------
+
+pg_ctrl_sc_tests = \
+	simple \
+
+pg_ctrl_m_tests = $(addprefix pg_ctrl-m-, $(pg_ctrl_sc_tests))
+
+spike32_tests += $(pg_ctrl_m_tests)
