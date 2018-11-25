@@ -26,6 +26,8 @@ Krv_m0 uses Microsemi_SmartFusion2. Refer to below links for tool download/insta
 
 3: Simulation
 
+Firstly, please update the Makefile zephyr_dir and riscv_test_dir with your local zephyr and riscv_tests DIR
+
 1)RV32I Compliance verification
 
 krv_m0 uses the riscv-tests rv32ui for compliance check
