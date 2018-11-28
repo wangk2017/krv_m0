@@ -26,7 +26,7 @@ end
 
 
 wire test_end1;
-assign test_end1 = dec_pc == 32'h000021ec;
+assign test_end1 = dec_pc == 32'h00001ae4;
 //assign test_end1 = 0;
 
 integer fp_z;

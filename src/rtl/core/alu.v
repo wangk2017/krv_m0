@@ -282,13 +282,10 @@ begin
 end
 
 //Branch condition check
-//alu not equal 0 
-wire alu_neq0;
-assign alu_neq0 = use_alu_ex && (|alu_result);
-
-//alu equal 0 
-wire alu_equ0;
-assign alu_equ0 = ~alu_neq0;
+wire adder_res_neq0;
+assign adder_res_neq0 = alu_sub_ex && (|adder_result);
+wire adder_res_equ0;
+assign adder_res_equ0 = ~adder_res_neq0;
 
 wire branch_beq_taken;
 wire branch_bne_taken;
@@ -296,8 +293,8 @@ wire branch_blt_taken;
 wire branch_bge_taken;
 wire branch_bltu_taken;
 wire branch_bgeu_taken;
-assign branch_beq_taken = beq_ex & (alu_equ0);
-assign branch_bne_taken = bne_ex & (alu_neq0);
+assign branch_beq_taken = beq_ex & (adder_res_equ0);
+assign branch_bne_taken = bne_ex & (adder_res_neq0);
 assign branch_blt_taken = blt_ex & (com_result);
 assign branch_bge_taken = bge_ex & (!com_result);
 assign branch_bltu_taken = bltu_ex & (ucom_result);
