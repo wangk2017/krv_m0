@@ -236,7 +236,7 @@ begin
 			begin
 				mcause <= `M_TIMER_INT;
 			end
-			else if(valid_interrupt)
+			else if(valid_ex_int)
 			begin
 				mcause <= `M_EXTER_INT;
 			end
@@ -327,9 +327,12 @@ end
 //-------------------------------------------//
 //trap condition
 //-------------------------------------------//
-//wire valid_timer_int;
-assign valid_interrupt = mstatus_mie && meie && meip;
+wire valid_timer_int;
+wire valid_ex_int;
 
+assign valid_interrupt = valid_ex_int || valid_timer_int;
+
+assign valid_ex_int = mstatus_mie && meie && meip;
 assign valid_timer_int = mstatus_mie && mtie && mtip;
 assign exception_met = pc_misaligned | load_x0 | csr_illegal_access | ecall;
 assign trap = exception_met | valid_interrupt | valid_timer_int;

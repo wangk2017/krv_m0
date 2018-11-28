@@ -33,22 +33,21 @@ input wire cpu_rstn,					// cpu reset, active low
 input wire [`ADDR_WIDTH - 1 : 0] boot_addr,		// boot address from SoC
 
 //interface with dec
-input wire jal_dec, 					// jal
-input wire jalr_dec, 					// jalr
+input wire jal_ex, 					// jal
+input wire jalr_ex, 					// jalr
 input wire fence_dec,					// fence
-input wire signed [`DATA_WIDTH - 1 : 0] imm_dec,	// immediate at dec stage
-input wire signed [`DATA_WIDTH - 1 : 0] src_data1_dec,	// rs1 data for jalr
 output reg [`ADDR_WIDTH - 1 : 0] pc_dec,		// Program counter value for the previous 1 instruction
 input wire dec_valid, 					// stall IF stage
 input wire dec_ready, 					// stall IF stage
 output reg if_valid,					// indication of instruction valid
 output reg [`INSTR_WIDTH - 1 : 0] instr_dec,		// instruction
+input wire signed [`DATA_WIDTH - 1 : 0] src_data1_ex,	// source data 1 at EX stage
+input wire signed [`DATA_WIDTH - 1 : 0] imm_ex,		// immediate at ex stage
+input wire [`ADDR_WIDTH - 1 : 0] pc_ex,			// Program counter value for the previous 2 instruction
 
 //interface with alu
 input wire ex_ready,
 input wire branch_taken_ex,				// branch condition met
-input wire signed [`DATA_WIDTH - 1 : 0] imm_ex,		// immediate at ex stage
-input wire [`ADDR_WIDTH - 1 : 0] pc_ex,			// Program counter value for the previous 2 instruction
 
 //interface with imem_ctrl
 output wire [`ADDR_WIDTH - 1 : 0] next_pc,		// Program counter value for imem addr
@@ -85,8 +84,8 @@ input wire [`ADDR_WIDTH - 1 : 0] mepc			// epc for return from trap
 //if the IF is waiting for memory read,
 // the jump/branch_taken/mret from the DEC/EX should be kept
 
-reg jal_dec_r;
-reg jalr_dec_r;
+reg jal_ex_r;
+reg jalr_ex_r;
 reg branch_taken_ex_r;
 reg mret_r;
 reg fence_dec_r;
@@ -95,14 +94,14 @@ always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
 	if (~cpu_rstn)
 	begin
-		jal_dec_r <= 1'b0;
+		jal_ex_r <= 1'b0;
 	end
 	else 
 	begin
 		if(instr_read_data_valid && dec_ready)
-		jal_dec_r <= 1'b0;
-		else if(jal_dec)
-		jal_dec_r <= 1'b1;
+		jal_ex_r <= 1'b0;
+		else if(jal_ex)
+		jal_ex_r <= 1'b1;
 	end
 end	
 
@@ -110,14 +109,14 @@ always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
 	if (~cpu_rstn)
 	begin
-		jalr_dec_r <= 1'b0;
+		jalr_ex_r <= 1'b0;
 	end
 	else 
 	begin
 		if(instr_read_data_valid && dec_ready)
-		jalr_dec_r <= 1'b0;
-		else if(jalr_dec)
-		jalr_dec_r <= 1'b1;
+		jalr_ex_r <= 1'b0;
+		else if(jalr_ex)
+		jalr_ex_r <= 1'b1;
 	end
 end	
 
@@ -173,17 +172,13 @@ reg [`ADDR_WIDTH - 1 : 0] addr_adder_res;
 
 always @ *
 begin
-	if(branch_taken_ex)			//branch
+	if(branch_taken_ex | jal_ex)			//branch or jal
 	begin
 		addr_adder_res = pc_ex + imm_ex;
 	end
-	else if(jal_dec || jalr_dec)		
+	else if(jalr_ex)		
 	begin
-		case ({jal_dec,jalr_dec})
-		2'b01: addr_adder_res = src_data1_dec + imm_dec;	//jalr
-		2'b10: addr_adder_res = pc_dec + imm_dec;		//jal
-		default: addr_adder_res = pc + 4;
-		endcase
+		addr_adder_res = src_data1_ex + imm_ex;	//jalr
 	end
 	else if(instr_read_data_valid && dec_ready)
 	begin
@@ -207,13 +202,13 @@ begin
 	begin
 		addr_adder_res_r <= {`INSTR_WIDTH{1'b0}};	
 	end
-	else if(branch_taken_ex || jal_dec || jalr_dec)
+	else if(branch_taken_ex || jal_ex || jalr_ex)
 	begin
 		addr_adder_res_r <= addr_adder_res;
 	end
 end
 
-wire  [`ADDR_WIDTH - 1 : 0] addr_adder_res_c = (branch_taken_ex_r || jal_dec_r || jalr_dec_r )? addr_adder_res_r : addr_adder_res;
+wire  [`ADDR_WIDTH - 1 : 0] addr_adder_res_c = (branch_taken_ex_r || jal_ex_r || jalr_ex_r )? addr_adder_res_r : addr_adder_res;
 
 assign next_pc = trap ? vector_addr : ((!(dec_ready) || ((fence_dec || fence_dec_r) && !(instr_read_data_valid && dec_ready) && !branch_taken_ex))? pc: ((mret||mret_r) ? mepc : addr_adder_res_c));
 
@@ -233,7 +228,7 @@ end
 //--------------------------------------------------------------------------------------//
 //Keep the flush signal when fetch is waiting for the memory data back
 //--------------------------------------------------------------------------------------//
-wire flush_if = jal_dec |jalr_dec | branch_taken_ex | trap | mret;
+wire flush_if = jal_ex |jalr_ex | branch_taken_ex | trap | mret;
 reg flush_if_r;
 
 always @ (posedge cpu_clk or negedge cpu_rstn)

@@ -34,12 +34,10 @@ input wire if_valid,						// indication of IF stage data valid
 output wire dec_ready,						// indication of DEC stage is ready
 input wire [`INSTR_WIDTH - 1 : 0] instr_dec,			// instruction at dec stage
 input wire [`ADDR_WIDTH - 1 : 0] pc_dec,			// pc propagated from IF stage
-output wire jal_dec, 						// jal
-output wire jalr_dec,						// jalr
 output wire fence_dec,						// fence
-output wire signed [`DATA_WIDTH - 1 : 0] imm_dec,		// imm at DEC stage
+output reg jal_ex, 						// jal
+output reg jalr_ex,						// jalr
 output reg signed [`DATA_WIDTH - 1 : 0] imm_ex,			// imm at EX stage
-output reg signed [`DATA_WIDTH - 1 : 0] src_data1_dec,		// source data1 at DEC stage
 
 //interface with alu
 output reg dec_valid,
@@ -93,6 +91,7 @@ input wire [`RD_WIDTH:0] rd_wb,					// rd at WB stage
 output wire mret,						// mret
 
 //interface with trap_ctrl
+input wire valid_interrupt,					// interrupt 
 input wire exception_met,					// exception condition met
 output wire load_x0,						// load x0 exception
 output wire ecall,
@@ -363,6 +362,7 @@ gprs u_gprs(
 
 );
 
+wire signed [`DATA_WIDTH - 1 : 0] imm_dec;			// imm at DEC stage
 //imm generation block
 imm_gen imm_gen_inst (
 .instr 		(valid_instr_mux),
@@ -383,6 +383,7 @@ wire alu_use_imm;
 assign alu_use_rs2 = R_type | B_type ;
 assign alu_use_imm = I_type | S_type | U_type;
 
+reg signed [`DATA_WIDTH - 1 : 0]  src_data1_dec;	//alu source data1 
 reg signed [`DATA_WIDTH - 1 : 0]  src_data2_dec;	//alu source data2 
 
 
@@ -393,8 +394,8 @@ assign rs1_dec = {1'b0,rs1};
 assign rs2_dec = {1'b0,rs2};
 
 wire dec_stall;
-assign jal_dec = instruction_is_jal && !dec_stall;
-assign jalr_dec = instruction_is_jalr && !dec_stall;
+wire jal_dec = instruction_is_jal && !dec_stall;
+wire jalr_dec = instruction_is_jalr && !dec_stall;
 
 wire only_src2_used_dec = instruction_is_lui | mcsr_rd | instruction_is_jal | instruction_is_jalr; //to alu for calculation 
 wire src1_not_used_dec = instruction_is_lui | instruction_is_jal;		   //for dependency check
@@ -496,7 +497,7 @@ end
 //---------------------------------------------------------------------------//
 
 //dec flush condition
-wire flush_dec = branch_taken_ex | exception_met ;
+wire flush_dec = branch_taken_ex | jal_ex | jalr_ex | exception_met ;
 
 //for alu 
 always @ (posedge cpu_clk or negedge cpu_rstn)
@@ -667,6 +668,8 @@ begin
 		mem_B_ex <= 1'b0;
 		mem_U_ex <= 1'b0;
 		pc_ex <= 0;
+		jal_ex <= 1'b0;
+		jalr_ex <= 1'b0;
 		pre_instr_is_load <= 1'b0;
 	end
 	else
@@ -682,6 +685,8 @@ begin
 				mem_B_ex <= (instruction_is_load | instruction_is_store) & (funct3_lsb | funct3_lbu); 
 				mem_U_ex <= (instruction_is_load | instruction_is_store) & (funct3_lhu | funct3_lbu); 
 				pc_ex <= pc_dec;
+				jal_ex <= jal_dec;
+				jalr_ex <= jalr_dec;
 			end
 			else
 			begin
@@ -692,6 +697,8 @@ begin
 				mem_B_ex <= 1'b0;
 				mem_U_ex <= 1'b0;
 				pc_ex <= pc_ex;
+				jal_ex <= 1'b0;
+				jalr_ex <= 1'b0;
 			end
 		end   
 	end
@@ -914,7 +921,7 @@ begin
 end
 
 wire wfi_stall;
-assign wfi_stall = wfi_i && (!wfi_stall_delay);
+assign wfi_stall = wfi_i && !valid_interrupt;// && (!wfi_stall_delay);
 
 wire fence_stall;
 assign fence_dec = instruction_is_fence && (funct3_fence_i || funct3_fence);
