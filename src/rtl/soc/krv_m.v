@@ -427,46 +427,34 @@ ahb m_ahb(
 .HREADY_to_M2		(),
 
 //Slave0
-.HSEL_to_S0		(HSEL_kplic),
-.HADDR_to_S0		(HADDR_kplic),
-.HTRANS_to_S0		(HTRANS_kplic),
-.HWRITE_to_S0		(HWRITE_kplic),
-.HWDATA_to_S0		(HWDATA_kplic),
-.HRDATA_from_S0		(HRDATA_kplic),
-.HRESP_from_S0		(HRESP_kplic),
-.HREADY_from_S0		(HREADY_kplic),
-
+.HSEL_to_S0		(HSEL_flash	),
+.HADDR_to_S0		(HADDR_flash	),
+.HTRANS_to_S0		(HTRANS_flash	),
+.HWRITE_to_S0		(HWRITE_flash	),
+.HWDATA_to_S0		(HWDATA_flash	),
+.HRDATA_from_S0		(HRDATA_flash	),
+.HRESP_from_S0		(HRESP_flash	),
+.HREADY_from_S0		(HREADY_flash	),
 
 //Slave1
-.HSEL_to_S1		(HSEL_core_timer),
-.HADDR_to_S1		(HADDR_core_timer),
-.HTRANS_to_S1		(HTRANS_core_timer),
-.HWRITE_to_S1		(HWRITE_core_timer),
-.HWDATA_to_S1		(HWDATA_core_timer),
-.HRDATA_from_S1		(HRDATA_core_timer),
-.HRESP_from_S1		(HRESP_core_timer),
-.HREADY_from_S1		(HREADY_core_timer),
-/*
-.HSEL_to_S1		(),
-.HADDR_to_S1		(),
-.HTRANS_to_S1		(),
-.HWRITE_to_S1		(),
-.HWDATA_to_S1		(),
-.HRDATA_from_S1		(32'h0),
-.HRESP_from_S1		(2'h0),
-.HREADY_from_S1		(1'b1),
-
-*/
+.HSEL_to_S1		(HSEL_kplic),
+.HADDR_to_S1		(HADDR_kplic),
+.HTRANS_to_S1		(HTRANS_kplic),
+.HWRITE_to_S1		(HWRITE_kplic),
+.HWDATA_to_S1		(HWDATA_kplic),
+.HRDATA_from_S1		(HRDATA_kplic),
+.HRESP_from_S1		(HRESP_kplic),
+.HREADY_from_S1		(HREADY_kplic),
 
 //Slave2
-.HSEL_to_S2		(),
-.HADDR_to_S2		(),
-.HTRANS_to_S2		(),
-.HWRITE_to_S2		(),
-.HWDATA_to_S2		(),
-.HRDATA_from_S2		(32'h0),
-.HRESP_from_S2		(2'h0),
-.HREADY_from_S2		(1'b1),
+.HSEL_to_S2		(HSEL_core_timer),
+.HADDR_to_S2		(HADDR_core_timer),
+.HTRANS_to_S2		(HTRANS_core_timer),
+.HWRITE_to_S2		(HWRITE_core_timer),
+.HWDATA_to_S2		(HWDATA_core_timer),
+.HRDATA_from_S2		(HRDATA_core_timer),
+.HRESP_from_S2		(HRESP_core_timer),
+.HREADY_from_S2		(HREADY_core_timer),
 
 //Slave3
 .HSEL_to_S3		(),
@@ -479,34 +467,35 @@ ahb m_ahb(
 .HREADY_from_S3		(1'b1),
 
 //Slave4
-.HSEL_to_S4		(),
-.HADDR_to_S4		(),
-.HTRANS_to_S4		(),
-.HWRITE_to_S4		(),
-.HWDATA_to_S4		(),
-.HRDATA_from_S4		(32'h0),
-.HRESP_from_S4		(2'h0),
-.HREADY_from_S4		(1'b1),
+.HSEL_to_S4		(HSEL_apb	),
+.HADDR_to_S4		(HADDR_apb	),
+.HTRANS_to_S4		(HTRANS_apb	),
+.HWRITE_to_S4		(HWRITE_apb	),
+.HWDATA_to_S4		(HWDATA_apb	),
+.HRDATA_from_S4		(HRDATA_apb	),
+.HRESP_from_S4		(HRESP_apb	),
+.HREADY_from_S4		(HREADY_apb	),
 
 //Slave5
-.HSEL_to_S5		(HSEL_apb	),
-.HADDR_to_S5		(HADDR_apb	),
-.HTRANS_to_S5		(HTRANS_apb	),
-.HWRITE_to_S5		(HWRITE_apb	),
-.HWDATA_to_S5		(HWDATA_apb	),
-.HRDATA_from_S5		(HRDATA_apb	),
-.HRESP_from_S5		(HRESP_apb	),
-.HREADY_from_S5		(HREADY_apb	),
+.HSEL_to_S5		(),
+.HADDR_to_S5		(),
+.HTRANS_to_S5		(),
+.HWRITE_to_S5		(),
+.HWDATA_to_S5		(),
+.HRDATA_from_S5		(32'h0),
+.HRESP_from_S5		(2'h0),
+.HREADY_from_S5		(1'b1),
 
 //Slave6
-.HSEL_to_S6		(HSEL_flash	),
-.HADDR_to_S6		(HADDR_flash	),
-.HTRANS_to_S6		(HTRANS_flash	),
-.HWRITE_to_S6		(HWRITE_flash	),
-.HWDATA_to_S6		(HWDATA_flash	),
-.HRDATA_from_S6		(HRDATA_flash	),
-.HRESP_from_S6		(HRESP_flash	),
-.HREADY_from_S6		(HREADY_flash	)
+.HSEL_to_S6		(),
+.HADDR_to_S6		(),
+.HTRANS_to_S6		(),
+.HWRITE_to_S6		(),
+.HWDATA_to_S6		(),
+.HRDATA_from_S6		(32'h0),
+.HRESP_from_S6		(2'h0),
+.HREADY_from_S6		(1'b1)
+
 );
 
 apb_ss m_apb(

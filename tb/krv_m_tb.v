@@ -32,16 +32,16 @@ wire [`AHB_DATA_WIDTH - 1 : 0] HWDATA_rom;
 wire HREADY_rom;
 wire [`AHB_DATA_WIDTH - 1 : 0] HRDATA_rom;
 
-assign HSEL_rom = DUT.m_ahb.HSEL_to_S6;
-assign HADDR_rom = DUT.m_ahb.HADDR_to_S6;
-assign HWRITE_rom = DUT.m_ahb.HWRITE_to_S6;
-assign HWDATA_rom = DUT.m_ahb.HWDATA_to_S6;
+assign HSEL_rom = DUT.m_ahb.HSEL_to_S0;
+assign HADDR_rom = DUT.m_ahb.HADDR_to_S0;
+assign HWRITE_rom = DUT.m_ahb.HWRITE_to_S0;
+assign HWDATA_rom = DUT.m_ahb.HWDATA_to_S0;
 
 
 initial
 begin
-force DUT.m_ahb.HRDATA_from_S6 = HRDATA_rom; 
-force DUT.m_ahb.HREADY_from_S6 = HREADY_rom; 
+force DUT.m_ahb.HRDATA_from_S0 = HRDATA_rom; 
+force DUT.m_ahb.HREADY_from_S0 = HREADY_rom; 
 end
 
 test_sram u_rom(

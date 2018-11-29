@@ -96,32 +96,32 @@ assign nibble_7 = HADDR_M[31:28];
 assign trans = (HTRANS_M != `IDLE);
 
 assign HSEL_S0 = trans && (
-	(nibble_7 == 4'h4) &&
-	(nibble_6 == 4'h0)
+	(nibble_7 < 4'h4)
 );	
 
 assign HSEL_S1 = trans && (
 	(nibble_7 == 4'h4) &&
-	(nibble_6 == 4'h4)
+	(nibble_6 < 4'h4)
 );
 
 assign HSEL_S2 = trans && (
-	(nibble_7 == 4'h1)
+	(nibble_7 == 4'h4) &&
+	(nibble_6 >= 4'h4)
 );
 
 assign HSEL_S3 = trans && (
-	(nibble_7 == 4'h2) || (nibble_7 == 4'h3)
-);
-
-assign HSEL_S4 = trans && (
 	(nibble_7 == 4'h5) || (nibble_7 == 4'h6)
 );
 
+assign HSEL_S4 = trans && (
+	nibble_7 == 4'h7
+);
+
 assign HSEL_S5 = trans && (
-	(nibble_7 == 4'h7)
+	(nibble_7 == 4'h8) || (nibble_7 == 4'h9)
 );
 assign HSEL_S6 = trans && (
-	(nibble_7 == 4'h0)
+	(nibble_7 >= 4'ha)
 );
 
 //State control
