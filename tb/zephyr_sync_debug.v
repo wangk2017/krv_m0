@@ -12,9 +12,22 @@ reg mem_addr_hit4;
 wire uart_tx_wr = !(DUT.m_apb.uart_0.uart_0.WEn || DUT.m_apb.uart_0.uart_0.csn);
 wire[7:0] uart_tx_data = DUT.m_apb.uart_0.uart_0.data_in;
 
+//Play a trick to let the simulation run faster
+
+initial
+begin
+#5;
+$display ("=========================================================================== \n");
+$display ("Here is a trick to force the baud rate higher to make the simulation faster \n");
+$display ("you can turn off the trick in tb/zephyr_debug.v by comment the force \n");
+$display ("=========================================================================== \n");
+force DUT.m_apb.uart_0.uart_0.baud_val = 13'h4;
+end
+
+
 
 wire test_end1;
-assign test_end1 = dec_pc == 32'h00001500;
+assign test_end1 = dec_pc == 32'h0000151c;
 //assign test_end1 = 0;
 
 integer fp_z;
@@ -36,10 +49,8 @@ always @(posedge cpu_clk)
 begin
 	if(uart_tx_wr)
 		begin
-/*
 			$display ("UART Transmitt");
 			$display ("UART TX_DATA is %h \n",uart_tx_data);
-*/
 			$fwrite(fp_z, "%s", uart_tx_data);
 		end
 
@@ -47,26 +58,26 @@ end
 parameter MAIN 			= 32'h000014d0;
 parameter INITIALIZE 		= 32'h0000074c;
 parameter PREPC 		= 32'h00000738;
-parameter BSS_ZERO 		= 32'h00001488;
-parameter DATA_COPY 		= 32'h000014a8;
-parameter CSTART 		= 32'h0000151c;
-parameter MEMSET 		= 32'h0000121c;
+parameter BSS_ZERO 		= 32'h0000148c;
+parameter DATA_COPY 		= 32'h000014ac;
+parameter CSTART 		= 32'h00001520;
+parameter MEMSET 		= 32'h00001220;
 parameter SOC_INTERRUPT_INIT 	= 32'h00000e40;
-parameter DRIVER 		= 32'h00001388;
+parameter DRIVER 		= 32'h0000138c;
 parameter PLIC_INIT 		= 32'h00000f14;
-parameter UART_MIV_INIT 	= 32'h00001338;
+parameter UART_MIV_INIT 	= 32'h0000133c;
 parameter UART_CONSOLE_INIT 	= 32'h00000ee4;
-parameter SCHD_INIT 		= 32'h00001c4c;
-parameter SETUP_NEW_THREAD 	= 32'h00001f68;
+parameter SCHD_INIT 		= 32'h00001c44;
+parameter SETUP_NEW_THREAD 	= 32'h00001f58;
 parameter NEW_THREAD		= 32'h00000768;
-parameter INIT_THREAD_BASE	= 32'h00000768;
+parameter INIT_THREAD_BASE	= 32'h0000215c;
 parameter ADD_TO_READY		= 32'h000019c8;
 parameter K_SPIN_LOCK		= 32'h000016fc;
-parameter PRIQ_DUMB_ADD		= 32'h00001964;
+parameter PRIQ_DUMB_ADD		= 32'h00001960;
 parameter UPDATE_CACHE		= 32'h0000170c;
 parameter SWAP			= 32'h00000228;
-parameter BG_THREAD_MAIN	= 32'h000014d0;
-parameter UART_MIV_POLL_OUT	= 32'h000012ac;
+parameter BG_THREAD_MAIN	= 32'h000014d4;
+parameter UART_MIV_POLL_OUT	= 32'h000012b0;
 parameter PRINTK		= 32'h00000db0;
 parameter VPRINTK		= 32'h00000d80;
 parameter _VPRINTK		= 32'h000009b0;
@@ -77,8 +88,8 @@ parameter THREADB		= 32'h00000448;
 parameter RESCHEDULE		= 32'h0000013c;
 parameter THREAD_ENTRY_WRAPPER  = 32'h00000764;
 parameter THREAD_ENTRY		= 32'h00000814;
-parameter INIT_STATIC_THREADS	= 32'h00002088;
-parameter IMPL_K_THREAD_START  	= 32'h00001f10;
+parameter INIT_STATIC_THREADS	= 32'h00002078;
+parameter IMPL_K_THREAD_START  	= 32'h00001f00;
 
 wire [31:0] mret_addr = DUT.u_core.u_fetch.mepc;
 wire [31:0] mret_instr = DUT.u_core.u_fetch.mret;

@@ -52,6 +52,7 @@ input wire [`ADDR_WIDTH - 1 : 0] mepc,			//mepc
 input wire [`DATA_WIDTH - 1 : 0] mcause,		//mcause
 input wire [`DATA_WIDTH - 1 : 0] mtval,			//mtval
 input wire valid_interrupt,				//valid interrupt
+input wire mret,					//mret
 output wire mepc_sel,					//mepc address
 output wire mcause_sel,					//mcause address
 output wire mtval_sel,					//mtval address
@@ -187,16 +188,40 @@ assign mhartid_rd_data = {`DATA_WIDTH{1'b0}};
 
 //6: mstatus -- Machine Status Register
 // only MIE bit implemented for global interrupt enable
+reg mstatus_mpie;
 
 always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(!cpu_rstn)
 	begin
-		mstatus_mie <= 1'b1;
+		mstatus_mpie <= 1'b0;
 	end
 	else
 	begin
-		if(valid_interrupt)
+		if(mret)
+		begin
+			mstatus_mpie <= 1'b1;
+		end
+		else if(valid_interrupt)
+		begin
+			mstatus_mpie <= mstatus_mie;
+		end
+	end
+end
+
+always @ (posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
+		mstatus_mie <= 1'b0;
+	end
+	else
+	begin
+		if(mret)
+		begin
+			mstatus_mie <= mstatus_mpie; //take the mpie after mret
+		end
+		else if(valid_interrupt)
 		begin
 			mstatus_mie <= 1'b0; //auto clear the mie after an valid interrupt taken
 		end
