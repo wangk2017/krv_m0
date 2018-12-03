@@ -131,12 +131,12 @@ wire [`OPCODE_WIDTH - 1 : 0]	opcode;
 
 assign valid_instr = (if_valid) ? instr_dec : {`INSTR_WIDTH{1'b0}};
 
-reg load_hazard_r;
+reg load_hazard_1st_r;
+reg load_hazard_2nd_r;
+wire load_hazard_r = load_hazard_1st_r || load_hazard_2nd_r;
 reg ex_not_ready_r;
-reg [31:0] load_hazard_keep_instr;
 reg [31:0] dec_keep_instr;
 wire [`INSTR_WIDTH - 1 : 0]     valid_instr_mux =(ex_not_ready_r || (load_hazard_r && mem_wb_data_valid)) ? dec_keep_instr : valid_instr;
-//wire [`INSTR_WIDTH - 1 : 0]     valid_instr_mux = (load_hazard_r && mem_wb_data_valid) ? load_hazard_keep_instr : valid_instr;
 
 assign opcode = valid_instr_mux[`OPCODE_RANGE] ;
 assign funct3 = valid_instr_mux[`FUNCT3_RANGE] ;
@@ -655,7 +655,6 @@ begin
 	end
 end
 
-wire load_hazard;
 wire load_hazard_stall;
 // for load/store
 always @ (posedge cpu_clk or negedge cpu_rstn)
@@ -843,14 +842,22 @@ wire [5:0] hazard_rd_1st =  (rs1_wait_load_1st ? rs1_dec : (rs2_wait_load_1st ? 
 wire [5:0] hazard_rd_2nd =  (rs1_wait_load_2nd ? rs1_dec : (rs2_wait_load_2nd ? rs2_dec : 6'h32));
 wire [5:0] hazard_rd = load_hazard_2nd ? hazard_rd_2nd : hazard_rd_1st;
 
-reg [5:0] hazard_rd_r;
+//reg [5:0] hazard_rd_r;
 
 assign load_hazard_1st =(((rs1_wait_load_1st || rs2_wait_load_1st )) ) && (!mret);
 assign load_hazard_2nd =(((rs1_wait_load_2nd || rs2_wait_load_2nd )) ) && (!mret);
 //assign load_hazard_2nd =0;
 
-assign load_hazard = load_hazard_1st || load_hazard_2nd;
-assign load_hazard_stall = (load_hazard || load_hazard_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_r)));  
+
+reg [5:0] hazard_rd_1st_r;
+reg [5:0] hazard_rd_2nd_r;
+
+wire load_hazard_stall_1st = (load_hazard_1st || load_hazard_1st_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r)));
+wire load_hazard_stall_2nd = (load_hazard_2nd || load_hazard_2nd_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_2nd_r)));
+
+//assign load_hazard = load_hazard_1st || load_hazard_2nd;
+//assign load_hazard_stall = (load_hazard || load_hazard_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_r)));  
+assign load_hazard_stall = load_hazard_stall_1st || load_hazard_stall_2nd;  
 
 always@(posedge cpu_clk or negedge cpu_rstn)
 begin
@@ -886,21 +893,18 @@ always@(posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(!cpu_rstn)
 	begin
-		load_hazard_r <= 1'b0;
-		load_hazard_keep_instr <= 32'h0;
-		hazard_rd_r <= 6'h32;
+		load_hazard_1st_r <= 1'b0;
+		hazard_rd_1st_r <= 6'h32;
 	end
-	else if(mem_wb_data_valid && (rd_wb == hazard_rd_r))
+	else if(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r))
 	begin
-		load_hazard_r <= 1'b0;
-		load_hazard_keep_instr <= 32'h0;
-		hazard_rd_r <= 6'h32;
+		load_hazard_1st_r <= 1'b0;
+		hazard_rd_1st_r <= 6'h32;
 	end
-	else if(load_hazard)
+	else if(load_hazard_1st)
 	begin
-		load_hazard_r <= 1'b1;
-		load_hazard_keep_instr <= valid_instr;
-		hazard_rd_r <= hazard_rd;
+		load_hazard_1st_r <= 1'b1;
+		hazard_rd_1st_r <= hazard_rd_1st;
 	end
 end
 
@@ -908,9 +912,29 @@ always@(posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(!cpu_rstn)
 	begin
+		load_hazard_2nd_r <= 1'b0;
+		hazard_rd_2nd_r <= 6'h32;
+	end
+	else if(mem_wb_data_valid && (rd_wb == hazard_rd_2nd_r))
+	begin
+		load_hazard_2nd_r <= 1'b0;
+		hazard_rd_2nd_r <= 6'h32;
+	end
+	else if(load_hazard_2nd)
+	begin
+		load_hazard_2nd_r <= 1'b1;
+		hazard_rd_2nd_r <= hazard_rd_2nd;
+	end
+end
+
+
+always@(posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
 		pre_instr_is_load_r <= 1'b0;
 	end
-	else if(mem_wb_data_valid && (rd_wb == hazard_rd_r))
+	else if(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r))
 	begin
 		pre_instr_is_load_r <= 1'b0;
 	end
