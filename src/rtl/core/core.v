@@ -515,6 +515,7 @@ mcsr u_mcsr(
 .write_data		(mcsr_write_data),
 .read_data		(mcsr_read_data),
 .valid_interrupt	(valid_interrupt),
+.mret			(mret),
 .meip			(meip),		
 .mtip			(mtip),		
 .mepc			(mepc),	

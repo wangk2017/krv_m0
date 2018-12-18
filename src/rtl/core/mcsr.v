@@ -188,6 +188,26 @@ assign mhartid_rd_data = {`DATA_WIDTH{1'b0}};
 
 //6: mstatus -- Machine Status Register
 // only MIE bit implemented for global interrupt enable
+reg is_int;
+always @ (posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
+		is_int <= 1'b0;
+	end
+	else
+	begin
+		if(mret)
+		begin
+			is_int <= 1'b0;
+		end
+		else if(valid_interrupt)
+		begin
+			is_int <= 1'b1;
+		end
+	end
+end
+
 reg mstatus_mpie;
 
 always @ (posedge cpu_clk or negedge cpu_rstn)
@@ -198,7 +218,7 @@ begin
 	end
 	else
 	begin
-		if(mret)
+		if(mret && is_int)
 		begin
 			mstatus_mpie <= 1'b1;
 		end
@@ -206,6 +226,22 @@ begin
 		begin
 			mstatus_mpie <= mstatus_mie;
 		end
+		else if(mstatus_sel & valid_mcsr_wr)
+		begin
+			if(mcsr_set)
+			begin
+				mstatus_mpie <= mstatus_mpie | write_data[7];
+			end
+			else if(mcsr_clr)
+			begin
+				mstatus_mpie <= mstatus_mpie & (~write_data[7]);
+			end
+			else
+			begin
+				mstatus_mpie <= write_data[7];
+			end
+		end
+
 	end
 end
 
@@ -217,7 +253,7 @@ begin
 	end
 	else
 	begin
-		if(mret)
+		if(mret && is_int)
 		begin
 			mstatus_mie <= mstatus_mpie; //take the mpie after mret
 		end
@@ -248,7 +284,7 @@ begin
 end
 
 wire [`DATA_WIDTH - 1 : 0] mstatus_rd_data;
-assign mstatus_rd_data = (mstatus_sel) ? {28'h0,mstatus_mie,3'h0} : {`DATA_WIDTH{1'b0}}; 
+assign mstatus_rd_data = (mstatus_sel) ? {24'h0,mstatus_mpie,3'h0,mstatus_mie,3'h0} : {`DATA_WIDTH{1'b0}}; 
 
 
 //7: mtvec -- Machine Trap-Vector Base-Address Register
@@ -314,17 +350,17 @@ begin
 			if(mcsr_set)
 			begin
 				meie <= meie | write_data[11];
-				mtie <= mtie | write_data[8];
+				mtie <= mtie | write_data[7];
 			end
 			else if(mcsr_clr)
 			begin
 				meie <= meie & (~write_data[11]);
-				mtie <= mtie & (~write_data[8]);
+				mtie <= mtie & (~write_data[7]);
 			end
 			else
 			begin
 				meie <= write_data[11];
-				mtie <= write_data[8];
+				mtie <= write_data[7];
 			end
 		end
 		else
