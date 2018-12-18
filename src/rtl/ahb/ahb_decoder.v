@@ -63,17 +63,21 @@ output reg HREADY_S
 
 
 //Logic Start
+/*
 //---------------------------------------------------------------------//
-//ADDR				Slave NO.			Space
-//0xE000_0000 ~ 0xFFFF_FFFF  	Slave1				512MB
-//0xC000_0000 ~ 0xDFFF_FFFF	Slave4				512MB
-//0xA000_0000 ~ 0xBFFF_FFFF	Slave3				512MB
-//0x9000_0000 ~ 0x9FFF_FFFF	Slave2				256MB
-//0x8010_4000 ~ 0x8FFF_FFFF	Reserved			~256MB	
-//0x8010_2000 ~ 0x4000_0000	Slave0(PLIC)			8KB
-//0x8010_0000 ~ 0x7000_1000	Slave5(UART)			
-//0x0000_0000 ~ 0x8000_0000	Slave6(FLASH)			
+Port-Name	Block Name		Description
+M0		IAHB			Instruction AHB
+M1		DAHB			Data AHB
+M2		Reserved		For future use
+S0		Reserved for FLASH	0x0000_0000 ~ 0x3FFF_FFFF
+S1		KPLIC			0x4000_0000 ~ 0x43FF_FFFF
+S2		MTIMER			0x4400_0000 ~ 0x4FFF_FFFF
+S3		Reserved		0x5000_0000 ~ 0x6FFF_FFFF
+S4		APB			0x7000_0000 ~ 0x7FFF_FFFF
+S5		Reserved		0x8000_0000 ~ 0x9FFF_FFFF
+S6		Reserved		0xA000_0000 ~ 0xFFFF_FFFF
 //---------------------------------------------------------------------//
+*/
 
 wire trans;
 wire[3:0] nibble_0;
