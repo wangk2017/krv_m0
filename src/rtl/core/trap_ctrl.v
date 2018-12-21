@@ -135,6 +135,9 @@ end
 wire valid_wr;
 assign valid_wr = valid_mcsr_wr;
 
+wire valid_timer_int;
+wire valid_ex_int;
+
 always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
 	if (!cpu_rstn)
@@ -171,7 +174,7 @@ begin
 					mepc <= pc;
 				end
 			end
-			else if (valid_interrupt)
+			else if (valid_ex_int)
 			begin
 				mepc <= pc;	//return to the first instr not executed
 			end
@@ -327,13 +330,13 @@ end
 //-------------------------------------------//
 //trap condition
 //-------------------------------------------//
-wire valid_timer_int;
-wire valid_ex_int;
 
 assign valid_interrupt = valid_ex_int || valid_timer_int;
 
 assign valid_ex_int = mstatus_mie && meie && meip;
 assign valid_timer_int = mstatus_mie && mtie && mtip;
+//FIXME
+//assign valid_timer_int = 1'b0;
 assign exception_met = pc_misaligned | load_x0 | csr_illegal_access | ecall;
 assign trap = exception_met | valid_interrupt | valid_timer_int;
 
