@@ -133,6 +133,31 @@ make zephyr_phil.sim
 
 the output is stored in out/uart_tx_data_phil.txt
 
+4)Zephyr synchronization
+
+Compile zephyr
+
+cd samples/synchronization/
+
+cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
+
+cd build
+
+ninja
+
+Run simulation
+
+Go back to krv_m0
+
+make zephyr_sync.hex
+
+edit tb/sim_inc/tb_defines.vh with all commented except zephyr_sync
+
+make comp
+
+make zephyr_sync.sim
+
+the output is stored in out/uart_tx_data_sync.txt
 
 4: RUN FPGA
 
