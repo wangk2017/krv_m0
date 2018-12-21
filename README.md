@@ -28,34 +28,34 @@ Krv_m0 uses Microsemi_SmartFusion2. Refer to below links for tool download/insta
 
 Firstly, please update the Makefile zephyr_dir and riscv_test_dir with your local zephyr and riscv_tests DIR
 
-1) RV32I Compliance verification
+(1) RV32I Compliance verification
 
 krv_m0 uses the riscv-tests rv32ui for compliance check
 
-$ git clone https://github.com/riscv/riscv-tests
-
-$ cd riscv-tests
-
-$ git submodule update --init --recursive
+	$ git clone https://github.com/riscv/riscv-tests
+	
+	$ cd riscv-tests
+	
+	$ git submodule update --init --recursive
 
 Hack the env/p/link.ld with text start from 0x00000000
 
   . = 0x00000000;
   .text.init : { *(.text.init) }
   
-cd isa
-
-make rv32ui XLEN=32
+	cd isa
+	
+	make rv32ui XLEN=32
 
 revert the hack in env/p/link.ld
 
 go to the krv_m0 dir
 
-make all_riscv_hex
+	make all_riscv_hex
 
 edit tb/sim_inc/tb_defines.vh with all commented except riscv
 
-make all_riscv_tests
+	make all_riscv_tests
 
 The TB will check the value of gp(GPRS3), if it is 0x1 after entering write_tohost, it will display Pass, or it will display Fail.
 
@@ -63,7 +63,7 @@ All the sim log will be found in out/
 
 
 
-2) Zephyr Hello world
+(2) Zephyr Hello world
 
 krv_m0 test uses the board m2gl025_miv for some tiny setting changes.
 
@@ -84,78 +84,78 @@ config RISCV_ROM_BASE_ADDR
 
 Compile zephyr
 
-cd samples/hello_world/
+	cd samples/hello_world/
 
-cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
+	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
 
-cd build
+	cd build
 
-ninja
+	ninja
 
 Run simulation
 
 Go back to krv_m0
 
-make zephyr.hex
+	make zephyr.hex
 
 edit tb/sim_inc/tb_defines.vh with all commented except zephyr 
 
-make comp
+	make comp
 
-make zephyr.sim
+	make zephyr.sim
 
 the output is stored in out/uart_tx_data.txt
 
 
-3) Zephyr philosopher
+(3) Zephyr philosopher
 
 Compile zephyr
 
-cd samples/philosopher/
-
-cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
-
-cd build
-
-ninja
+	cd samples/philosopher/
+	
+	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
+	
+	cd build
+	
+	ninja
 
 Run simulation
 
 Go back to krv_m0
 
-make zephyr_phil.hex
+	make zephyr_phil.hex
 
 edit tb/sim_inc/tb_defines.vh with all commented except zephyr_phil
 
-make comp
+	make comp
 
-make zephyr_phil.sim
+	make zephyr_phil.sim
 
 the output is stored in out/uart_tx_data_phil.txt
 
-4) Zephyr synchronization
+(4) Zephyr synchronization
 
 Compile zephyr
 
-cd samples/synchronization/
-
-cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
-
-cd build
-
-ninja
+	cd samples/synchronization/
+	
+	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
+	
+	cd build
+	
+	ninja
 
 Run simulation
 
 Go back to krv_m0
 
-make zephyr_sync.hex
+	make zephyr_sync.hex
 
 edit tb/sim_inc/tb_defines.vh with all commented except zephyr_sync
 
-make comp
-
-make zephyr_sync.sim
+	make comp
+	
+	make zephyr_sync.sim
 
 the output is stored in out/uart_tx_data_sync.txt
 
@@ -166,7 +166,7 @@ krv_m0 uses the Micro-semi SmartFusion2, and the flash is filled with content of
 
 go to krv_m0 dir
 
-libero&
+	libero&
 
 connect the flashpro5 and open the putty and set the baud rate to 9600
 
