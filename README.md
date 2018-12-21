@@ -69,16 +69,15 @@ krv_m0 test uses the board m2gl025_miv for some tiny setting changes.
 
 In {ZEPHYR_DIR}/boards/riscv32/m2gl025_miv/board.h 
 
-#define uart_miv_port_0_clk_freq    25000000
+	#define uart_miv_port_0_clk_freq    25000000
 
 In {ZEPHYR_DIR}/boards/riscv32/m2gl025_miv/m2gl025_miv_defconfig
 
-CONFIG_UART_MIV_PORT_0_BAUD_RATE=9600
+	CONFIG_UART_MIV_PORT_0_BAUD_RATE=9600
 
 In {ZEPHYR_DIR}/soc/riscv32/riscv-privilege/miv/Kconfig.defconfig.series
 
-config RISCV_ROM_BASE_ADDR
-
+	config RISCV_ROM_BASE_ADDR
 	hex
 	default 0x00000000
 
@@ -170,16 +169,20 @@ go to krv_m0 dir
 
 connect the flashpro5 and open the putty and set the baud rate to 9600
 
-select the script of run_FPGA.tcl
+	select the script of run_FPGA.tcl
 
 
 I met some problem while import the component and need to manually do some fix.
 
-turn to design hierarchy, under krv_m, double click the flash_ss, for the rom used, select the krv_m0/bin_file/zephyr.sim.mem for its content.
+	turn to design hierarchy,
+	under krv_m, 
+	double click the flash_ss, 
+	for the rom used, select the krv_m0/bin_file/zephyr.sim.mem for its content.
 
- under itcm, double click the sram_4Kx32, and OK after the generate window appears.
+	under itcm, 
+	double click the sram_4Kx32, and OK after the generate window appears.
 
-Then click on the Run PROGRAM Action under design flow.
+	Then click on the Run PROGRAM Action under design flow.
 
 After some minutes, the FPGA Programming Action finished. Press the reset button on the board, and the zephyr hello world output will be displayed in the putty window.
 
