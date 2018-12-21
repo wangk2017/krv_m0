@@ -28,7 +28,7 @@ Krv_m0 uses Microsemi_SmartFusion2. Refer to below links for tool download/insta
 
 Firstly, please update the Makefile zephyr_dir and riscv_test_dir with your local zephyr and riscv_tests DIR
 
-1)RV32I Compliance verification
+1) RV32I Compliance verification
 
 krv_m0 uses the riscv-tests rv32ui for compliance check
 
@@ -63,7 +63,7 @@ All the sim log will be found in out/
 
 
 
-2)Zephyr Hello world
+2) Zephyr Hello world
 
 krv_m0 test uses the board m2gl025_miv for some tiny setting changes.
 
@@ -107,7 +107,7 @@ make zephyr.sim
 the output is stored in out/uart_tx_data.txt
 
 
-3)Zephyr philosopher
+3) Zephyr philosopher
 
 Compile zephyr
 
@@ -133,7 +133,7 @@ make zephyr_phil.sim
 
 the output is stored in out/uart_tx_data_phil.txt
 
-4)Zephyr synchronization
+4) Zephyr synchronization
 
 Compile zephyr
 
