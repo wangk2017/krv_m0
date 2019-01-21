@@ -273,7 +273,7 @@ module gpio_in_gpio_in_0_CoreGPIO(
         for (J = IO_NUM; J <= 31; J = J + 1)
         begin: GEN_NON_BITS
              assign GPIN_reg[J] = 1'b0;
-             always@*
+	     always @(posedge PCLK or negedge aresetn)
              begin
               GPOUT_reg[J] <= GND1;
               INTR_reg[J] <= GND1;

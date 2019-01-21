@@ -250,6 +250,22 @@ end
 //--------------------------------------------------------------------------------------//
 //2: pass instruction fetched and pc to dec
 //--------------------------------------------------------------------------------------//
+reg dec_not_ready_r;
+always @ (posedge cpu_clk or negedge cpu_rstn)
+begin
+	if (~cpu_rstn)
+	begin
+		dec_not_ready_r <= 1'b0;
+	end
+	else 
+	begin
+		if(dec_ready)
+			dec_not_ready_r <= 1'b0;
+		else if(instr_read_data_valid)
+			dec_not_ready_r <= 1'b1;
+	end
+end	
+
 
 always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
@@ -268,9 +284,9 @@ begin
 		end
 		else if(dec_ready)
 		begin
-			if_valid <= instr_read_data_valid;
 			instr_dec <= instr_read_data;
 			pc_dec <= pc;
+			if_valid <= instr_read_data_valid || dec_not_ready_r;
 		end
 	end
 end

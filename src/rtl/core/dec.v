@@ -58,6 +58,11 @@ output reg alu_sll_ex  ,					// use sll at EX stage
 output reg alu_srl_ex  ,					// use srl at EX stage
 output reg alu_sra_ex  ,					// use sra at EX stage
 output reg alu_mul_ex  ,					// use mul at EX stage
+output reg alu_mulh_ex  ,					// use mulh at EX stage
+output reg alu_mulhsu_ex  ,					// use mulhsu at EX stage
+output reg alu_mulhu_ex  ,					// use mulhu at EX stage
+output reg alu_rem_ex  ,					// use rem at EX stage
+output reg alu_remu_ex  ,					// use remu at EX stage
 output reg alu_div_ex  ,					// use div at EX stage
 output reg alu_divu_ex  ,					// use divu at EX stage
 output reg beq_ex,						// beq at EX stage
@@ -293,9 +298,14 @@ wire alu_xor_dec;
 wire alu_sll_dec;
 wire alu_srl_dec;
 wire alu_sra_dec;
+wire alu_mul_dec;
+wire alu_mulh_dec;
+wire alu_mulhsu_dec;
+wire alu_mulhu_dec;
 wire alu_div_dec;
 wire alu_divu_dec;
-wire alu_mul_dec;
+wire alu_rem_dec;
+wire alu_remu_dec;
 
 assign use_alu_dec = instruction_is_branch | instruction_is_load |
 		   instruction_is_store | instruction_is_alu_ir | instruction_is_alu_rr | instruction_is_auipc;
@@ -313,15 +323,15 @@ assign alu_ucom_dec = (instruction_is_branch & (funct3_bltu | funct3_bgeu)) |
 		   ((instruction_is_alu_ir | instruction_is_alu_rr) &
 		    funct3_011);
 
-assign alu_and_dec = (instruction_is_alu_ir | instruction_is_alu_rr)&   funct3_111;
+assign alu_and_dec = (instruction_is_alu_ir | (instruction_is_alu_rr && funct7_0))&   funct3_111;
 
-assign alu_or_dec = (instruction_is_alu_ir | instruction_is_alu_rr) &
+assign alu_or_dec  = (instruction_is_alu_ir | (instruction_is_alu_rr && funct7_0)) &
 		   funct3_110;
 
-assign alu_xor_dec = (instruction_is_alu_ir | instruction_is_alu_rr) &
+assign alu_xor_dec = (instruction_is_alu_ir | (instruction_is_alu_rr && funct7_0)) &
 		   funct3_100;
 
-assign alu_sll_dec = (instruction_is_alu_ir | instruction_is_alu_rr) &
+assign alu_sll_dec = (instruction_is_alu_ir | (instruction_is_alu_rr && funct7_0)) &
 		   funct3_001;
 
 assign alu_srl_dec = (instruction_is_alu_ir | instruction_is_alu_rr) &
@@ -333,11 +343,27 @@ assign alu_sra_dec = (instruction_is_alu_ir | instruction_is_alu_rr) &
 assign alu_mul_dec = instruction_is_alu_rr &
 		   funct3_000 & funct7_mul_div;
 
+assign alu_mulh_dec = instruction_is_alu_rr &
+		   funct3_001 & funct7_mul_div;
+
+assign alu_mulhsu_dec = instruction_is_alu_rr &
+		   funct3_010 & funct7_mul_div;
+
+assign alu_mulhu_dec = instruction_is_alu_rr &
+		   funct3_011 & funct7_mul_div;
+
 assign alu_div_dec = instruction_is_alu_rr &
 		   funct3_100 & funct7_mul_div;
 
 assign alu_divu_dec = instruction_is_alu_rr &
 		   funct3_101 & funct7_mul_div;
+
+assign alu_rem_dec = instruction_is_alu_rr &
+		   funct3_110 & funct7_mul_div;
+
+assign alu_remu_dec = instruction_is_alu_rr &
+		   funct3_111 & funct7_mul_div;
+
 //---------------------------------------------------------------------------//
 //2: Obtain source data 
 //---------------------------------------------------------------------------//
@@ -538,8 +564,13 @@ begin
 		alu_srl_ex <= 1'b0;
 		alu_sra_ex <= 1'b0;
 		alu_mul_ex <= 1'b0;
+		alu_mulh_ex <= 1'b0;
+		alu_mulhsu_ex <= 1'b0;
+		alu_mulhu_ex <= 1'b0;
 		alu_div_ex <= 1'b0;
 		alu_divu_ex <= 1'b0;
+		alu_rem_ex <= 1'b0;
+		alu_remu_ex <= 1'b0;
 	end
 	else
 	begin
@@ -561,8 +592,13 @@ begin
 			alu_srl_ex <= alu_srl_dec;
 			alu_sra_ex <= alu_sra_dec;
 			alu_mul_ex <= alu_mul_dec;
+			alu_mulh_ex <= alu_mulh_dec;
+			alu_mulhsu_ex <= alu_mulhsu_dec;
+			alu_mulhu_ex <= alu_mulhu_dec;
 			alu_div_ex <= alu_div_dec;
 			alu_divu_ex<= alu_divu_dec;
+			alu_rem_ex <= alu_rem_dec;
+			alu_remu_ex <= alu_remu_dec;
 		end
 		else
 		begin
@@ -580,8 +616,13 @@ begin
 			alu_srl_ex <= 1'b0;
 			alu_sra_ex <= 1'b0;
 			alu_mul_ex <= 1'b0;
+			alu_mulh_ex <= 1'b0;
+			alu_mulhsu_ex <= 1'b0;
+			alu_mulhu_ex <= 1'b0;
 			alu_div_ex <= 1'b0;
 			alu_divu_ex <= 1'b0;
+			alu_rem_ex <= 1'b0;
+			alu_remu_ex <= 1'b0;
 		end
 	   end
 	end

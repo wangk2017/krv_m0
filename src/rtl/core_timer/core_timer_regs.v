@@ -1,8 +1,8 @@
 //===============================================================||
-// File Name: 		core_timer_regs.v				 ||
+// File Name: 		core_timer_regs.v			 ||
 // Author:    		Kitty Wang				 ||
 // Description:   						 ||
-//	      		core_timer registers                          ||
+//	      		core_timer registers                     ||
 // History:   							 ||
 //                      2017/10/18 				 ||
 //                      First version				 ||

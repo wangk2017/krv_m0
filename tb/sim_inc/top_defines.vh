@@ -22,3 +22,4 @@
 
 `define ASIC
 `define SIM
+`define PG_CTRL

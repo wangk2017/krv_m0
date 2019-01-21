@@ -115,6 +115,11 @@ wire					alu_sll_ex  ;
 wire					alu_srl_ex  ;
 wire					alu_sra_ex  ;
 wire					alu_mul_ex  ;
+wire					alu_mulh_ex  ;
+wire					alu_mulhsu_ex  ;
+wire					alu_mulhu_ex  ;
+wire					alu_rem_ex  ;
+wire					alu_remu_ex  ;
 wire					alu_div_ex  ;
 wire					alu_divu_ex  ;
 wire 					beq_ex;
@@ -327,6 +332,11 @@ dec u_dec (
 .alu_srl_ex  		(alu_srl_ex ),
 .alu_sra_ex  		(alu_sra_ex ),
 .alu_mul_ex  		(alu_mul_ex ),
+.alu_mulh_ex  		(alu_mulh_ex ),
+.alu_mulhsu_ex  	(alu_mulhsu_ex ),
+.alu_mulhu_ex  		(alu_mulhu_ex ),
+.alu_rem_ex  		(alu_rem_ex ),
+.alu_remu_ex  		(alu_remu_ex ),
 .alu_div_ex  		(alu_div_ex ),
 .alu_divu_ex  		(alu_divu_ex ),
 .beq_ex			(beq_ex),
@@ -395,6 +405,11 @@ alu u_alu (
 .alu_srl_ex		(alu_srl_ex ),				
 .alu_sra_ex		(alu_sra_ex ),				
 .alu_mul_ex  		(alu_mul_ex ),
+.alu_mulh_ex  		(alu_mulh_ex ),
+.alu_mulhsu_ex  	(alu_mulhsu_ex ),
+.alu_mulhu_ex  		(alu_mulhu_ex ),
+.alu_rem_ex  		(alu_rem_ex ),
+.alu_remu_ex  		(alu_remu_ex ),
 .alu_div_ex  		(alu_div_ex ),
 .alu_divu_ex  		(alu_divu_ex ),
 .beq_ex			(beq_ex),

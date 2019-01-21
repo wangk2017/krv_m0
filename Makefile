@@ -19,6 +19,13 @@ pg/%.hex: tests/extra_tests/pg_ctrl/pg_ctrl-m-% firmware/makehex.py
 	python firmware/makehex.py $< > hex_file/$@
 	sed -i "1,1024d" hex_file/$@
 
+dhrystone.hex:  /home/kitty/open-sources/RISC-V-CORES/VexRiscvSoftcoreContest2018/software/dhrystone/up5kPerf/build/dhrystone.elf firmware/makehex.py
+	python firmware/makehex.py $< > hex_file/$@
+	sed -i "1,1024d" hex_file/$@
+
+hack_hex: dhrystone.hex
+	sed -i "1636,2047d" hex_file/$<
+
 all_pg_hex: pg/simple.hex
 
 
@@ -44,6 +51,9 @@ all_riscv_hex: riscv/add.hex riscv/bne.hex riscv/or.hex riscv/sltu.hex riscv/add
 comp:
 	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 
+veri:
+	verilator -Wall +incdir+./tb +incdir+./tb/sim_inc --cc ./tb/rom.v ./verification/krv_m_tb.v ./src/rtl/*/*.v  ./src/Actel_DirectCore/*.v --exe ./verification/sim_main.cpp
+	make -j -C obj_dir -f Vkrv_m_tb.mk Vkrv_m_tb
 
 csr.%.sim: hex_file/csr/%.hex 
 	cp $< hex_file/run.hex
@@ -79,6 +89,11 @@ zephyr_phil.sim: hex_file/zephyr/zephyr_phil.hex
 	cp out/krv.vcd out/krv.lxt
 	
 zephyr_sync.sim: hex_file/zephyr/zephyr_sync.hex
+	cp $< hex_file/run.hex
+	vvp -l out/$@ -v -n ./out/krv -lxt2
+	cp out/krv.vcd out/krv.lxt
+	
+dhrystone.sim: hex_file/dhrystone.hex
 	cp $< hex_file/run.hex
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt

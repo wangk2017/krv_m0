@@ -47,6 +47,11 @@ input wire alu_sll_ex,					// sll operation at EX stage
 input wire alu_srl_ex,					// srl operation at EX stage
 input wire alu_sra_ex,					// sra operation at EX stage
 input wire alu_mul_ex,					// mul operation at EX stage
+input wire alu_mulh_ex,					// mulh operation at EX stage
+input wire alu_mulhsu_ex,				// mulhsu operation at EX stage
+input wire alu_mulhu_ex,				// mulhu operation at EX stage
+input wire alu_rem_ex,					// rem operation at EX stage
+input wire alu_remu_ex,					// remu operation at EX stage
 input wire alu_div_ex,					// div operation at EX stage
 input wire alu_divu_ex,					// divu operation at EX stage
 output wire [`DATA_WIDTH - 1 : 0] alu_result_ex,	// forwarding result at EX stage to DEC stage
@@ -193,7 +198,7 @@ begin
 end
 
 //FIXME
-//10: multiply
+//10: mul
 wire signed [`DATA_WIDTH - 1 : 0] mul_src_data1;	//source data 1 for mul
 wire signed [`DATA_WIDTH - 1 : 0] mul_src_data2;	//source data 2 for mul
 wire signed [`DATA_WIDTH - 1 : 0] mul_result;		//result of mul
@@ -202,8 +207,38 @@ assign mul_src_data1 = (alu_mul_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
 assign mul_src_data2 = alu_mul_ex ? src_data2_ex : {`DATA_WIDTH {1'b0}};
 assign mul_result = mul_src_data1 * mul_src_data2;
 
+//11: mulh
+wire signed [`DATA_WIDTH - 1 : 0] mulh_src_data1;	//source data 1 for mulh
+wire signed [`DATA_WIDTH - 1 : 0] mulh_src_data2;	//source data 2 for mulh
+wire signed [`DATA_WIDTH - 1 : 0] mulh_result;		//result of mulh
+wire signed [`DATA_WIDTH - 1 : 0] mulh_result_l;	//result of mulh low DATA_WIDTH bits
+//gated the source operand when mulh not used 
+assign mulh_src_data1 = (alu_mulh_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
+assign mulh_src_data2 = alu_mulh_ex ? src_data2_ex : {`DATA_WIDTH {1'b0}};
+assign {mulh_result, mulh_result_l} = mulh_src_data1 * mulh_src_data2;
+
+//12: mulhsu
+wire signed [`DATA_WIDTH - 1 : 0] mulhsu_src_data1;	//source data 1 for mulhsu
+wire [`DATA_WIDTH - 1 : 0] 	  mulhsu_src_data2;	//source data 2 for mulhsu
+wire signed [`DATA_WIDTH - 1 : 0] mulhsu_result;	//result of mulhsu
+wire signed [`DATA_WIDTH - 1 : 0] mulhsu_result_l;	//result of mulhsu low DATA_WIDTH bits
+//gated the source operand when mulhsu not used 
+assign mulhsu_src_data1 = (alu_mulhsu_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
+assign mulhsu_src_data2 = alu_mulhsu_ex ? src_data2_ex : {`DATA_WIDTH {1'b0}};
+assign {mulhsu_result, mulhsu_result_l} = mulhsu_src_data1 * mulhsu_src_data2;
+
+//13: mulhu
+wire [`DATA_WIDTH - 1 : 0] mulhu_src_data1;	//source data 1 for mulhu
+wire [`DATA_WIDTH - 1 : 0] mulhu_src_data2;	//source data 2 for mulhu
+wire [`DATA_WIDTH - 1 : 0] mulhu_result;	//result of mulhu
+wire [`DATA_WIDTH - 1 : 0] mulhu_result_l;	//result of mulhu low DATA_WIDTH bits
+//gated the source operand when mulhu not used 
+assign mulhu_src_data1 = (alu_mulhu_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
+assign mulhu_src_data2 = alu_mulhu_ex ? src_data2_ex : {`DATA_WIDTH {1'b0}};
+assign {mulhu_result, mulhu_result_l} = mulhu_src_data1 * mulhu_src_data2;
+
 //FIXME
-//11: divider
+//14: divider
 wire signed [`DATA_WIDTH - 1 : 0] div_src_data1;	//source data 1 for div
 wire signed [`DATA_WIDTH - 1 : 0] div_src_data2;	//source data 2 for div
 wire signed [`DATA_WIDTH - 1 : 0] div_result;		//result of div
@@ -213,7 +248,7 @@ assign div_src_data2 = alu_div_ex ? src_data2_ex : 32'h1;
 assign div_result = div_src_data1/div_src_data2;
 
 //FIXME
-//12: unsigned divider
+//15: unsigned divider
 wire [`DATA_WIDTH - 1 : 0] divu_src_data1;	//source data 1 for divu
 wire [`DATA_WIDTH - 1 : 0] divu_src_data2;	//source data 2 for divu
 wire [`DATA_WIDTH - 1 : 0] divu_result;		//result of divu
@@ -221,11 +256,31 @@ wire [`DATA_WIDTH - 1 : 0] divu_result;		//result of divu
 assign divu_src_data1 = (alu_divu_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
 assign divu_src_data2 = alu_divu_ex ? src_data2_ex : 32'h1;
 assign divu_result = divu_src_data1/divu_src_data2;
+
+//16: rem
+wire signed [`DATA_WIDTH - 1 : 0] rem_src_data1;	//source data 1 for rem
+wire signed [`DATA_WIDTH - 1 : 0] rem_src_data2;	//source data 2 for rem
+wire signed [`DATA_WIDTH - 1 : 0] rem_result;		//result of rem
+//gated the source operand when rem not used 
+assign rem_src_data1 = (alu_rem_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
+assign rem_src_data2 = alu_rem_ex ? src_data2_ex : 32'h1; 
+assign rem_result = rem_src_data1%rem_src_data2;
+
+//17: remu
+wire [`DATA_WIDTH - 1 : 0] remu_src_data1;	//source data 1 for remu
+wire [`DATA_WIDTH - 1 : 0] remu_src_data2;	//source data 2 for remu
+wire [`DATA_WIDTH - 1 : 0] remu_result;		//result of remu
+//gated the source operand when remu not used 
+assign remu_src_data1 = (alu_remu_ex )? src_data1_ex : {`DATA_WIDTH {1'b0}};
+assign remu_src_data2 = alu_remu_ex ? src_data2_ex : 32'h1; 
+assign remu_result = remu_src_data1%remu_src_data2;
+
+
 //alu result
 wire signed [`DATA_WIDTH - 1 : 0] alu_result;
 
 assign alu_result = adder_result | com_result | ucom_result | and_result | or_result |
-xor_result | sll_result | srl_result | sra_result | mul_result | div_result | divu_result; 
+xor_result | sll_result | srl_result | sra_result | mul_result | mulh_result | mulhsu_result | mulhu_result | rem_result | remu_result | div_result | divu_result; 
 
 //bypass the alu when the instruction is jump or lui
 assign alu_result_ex = (only_src2_used_ex ? src_data2_ex : alu_result);
@@ -233,6 +288,24 @@ assign alu_result_ex = (only_src2_used_ex ? src_data2_ex : alu_result);
 //--------------------------------------------------------------------------------//
 //propagate result to MEM stage
 //--------------------------------------------------------------------------------//
+reg mem_not_ready_r;
+always@(posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
+		mem_not_ready_r <= 1'b0;
+	end
+	else if(mem_ready)
+	begin
+		mem_not_ready_r <= 1'b0;
+	end
+	else
+	begin
+		mem_not_ready_r <= 1'b1;
+	end
+
+end
+
 always@(posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(!cpu_rstn)
@@ -245,7 +318,7 @@ begin
 	   if(mem_ready)
 	   begin
 		alu_result_mem <= alu_result_ex;
-		ex_valid <= dec_valid & (use_alu_ex | only_src2_used_ex);           
+		ex_valid <= (dec_valid || mem_not_ready_r) & (use_alu_ex | only_src2_used_ex);           
 	   end
 	end
 end

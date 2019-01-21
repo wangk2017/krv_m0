@@ -111,6 +111,10 @@ wire [31:0] dec_pc = DUT.u_core.u_fetch.pc_dec;
 `include "pg_sr.v"
 `endif
 
+`ifdef DHRYSTONE
+`include "dhrystone_debug.v"
+`endif
+
 `ifdef ZEPHYR
 `include "zephyr_debug.v"
 `endif
@@ -219,9 +223,9 @@ end
 initial
 begin
 `ifndef RISCV
-	repeat (8000000)
+	repeat (1000000)
 `else
-	repeat (10030)
+	repeat (80000)
 `endif
 	begin
 	@(posedge cpu_clk);
