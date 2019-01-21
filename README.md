@@ -158,6 +158,17 @@ edit tb/sim_inc/tb_defines.vh with all commented except zephyr_sync
 
 the output is stored in out/uart_tx_data_sync.txt
 
+(5) Dhrystone
+
+edit tb/sim_inc/tb_defines.vh with all commented except dhrystone
+
+	make comp
+	
+	make dhrystone.sim
+
+the output is stored in out/uart_tx_data_dhrystone.txt
+
+
 4: RUN FPGA
 
 krv_m0 uses the Micro-semi SmartFusion2, and the flash is filled with content of zephyr hello world with uart baud rate=9600 and system_clk=25MHz.
