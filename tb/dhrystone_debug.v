@@ -16,8 +16,9 @@ end
 
 
 wire test_end1;
-assign test_end1 = dec_pc == 32'h001007c;
+//assign test_end1 = dec_pc == 32'h001007c;
 //assign test_end1 = 0;
+assign test_end1 = (uart_tx_data==8'hff);
 
 integer fp_z;
 

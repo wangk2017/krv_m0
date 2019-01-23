@@ -94,7 +94,7 @@ module core (
 //Wires declaration
 //---------------------------------------------//
 
-wire 					jal_ex;
+wire 					jal_dec;
 wire 					jalr_ex;
 wire 					fence_dec;
 wire [`ADDR_WIDTH - 1 : 0] 		pc_dec;
@@ -103,6 +103,7 @@ wire [`RD_WIDTH:0] 			rd_ex;
 wire signed [`DATA_WIDTH - 1 : 0]  	src_data1_ex;	
 wire signed [`DATA_WIDTH - 1 : 0]  	src_data2_ex;	
 wire signed [`DATA_WIDTH - 1 : 0] 	imm_ex;
+wire signed [`DATA_WIDTH - 1 : 0] 	imm_dec;
 wire					use_alu_ex  ;
 wire					alu_add_ex  ;
 wire					alu_sub_ex  ;
@@ -283,7 +284,7 @@ fetch u_fetch(
 .if_valid		(if_valid ),		
 .dec_ready		(dec_ready),		
 .instr_dec		(instr_dec ),	
-.jal_ex		(jal_ex), 
+.jal_dec		(jal_dec), 
 .jalr_ex		(jalr_ex), 
 .fence_dec		(fence_dec),
 .ex_ready		(ex_ready),		
@@ -291,6 +292,7 @@ fetch u_fetch(
 .branch_taken_ex	(branch_taken_ex),
 .src_data1_ex		(src_data1_ex ),
 .imm_ex			(imm_ex),
+.imm_dec		(imm_dec),
 .mret			(mret),
 .pc_misaligned 		(pc_misaligned),
 .fault_pc		(fault_pc),
@@ -311,7 +313,7 @@ dec u_dec (
 .dec_ready		(dec_ready),		
 .instr_dec		(instr_dec ),
 .pc_dec			(pc_dec),
-.jal_ex		(jal_ex), 
+.jal_dec		(jal_dec), 
 .jalr_ex		(jalr_ex), 
 .fence_dec		(fence_dec),
 .dec_valid		(dec_valid ),		
@@ -355,6 +357,7 @@ dec u_dec (
 .pc_ex			(pc_ex),
 .rd_ex			(rd_ex ), 
 .imm_ex			(imm_ex),
+.imm_dec		(imm_dec),
 .data_mem		(data_mem),
 .rd_mem			(rd_mem ),	
 .mem_wb_data_valid	(mem_wb_data_valid),

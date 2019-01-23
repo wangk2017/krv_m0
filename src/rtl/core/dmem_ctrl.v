@@ -367,11 +367,18 @@ begin
 	end
 end
 
+wire load_stall = (load_mem & (!mem_wb_data_valid));
+wire store_stall = (store_mem && ((addr_AHB && DAHB_trans_buffer_full) || (addr_dtcm && !data_dtcm_ready)));
 
-wire dmem_stall =  (load_mem & (!mem_wb_data_valid)) || (store_mem && ((addr_AHB && DAHB_trans_buffer_full) || (addr_dtcm && !data_dtcm_ready)));
+wire dmem_stall =  load_stall || store_stall;
 assign dmem_stall_wait = load_wait_data || store_wait_buffer;
 assign mem_ready = !dmem_stall && wb_ready;
 
+//performance counter
+wire [31:0] load_stall_cnt;
+en_cnt u_load_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(load_stall), .cnt (load_stall_cnt));
 
+wire [31:0] store_stall_cnt;
+en_cnt u_store_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(store_stall), .cnt (store_stall_cnt));
 
 endmodule

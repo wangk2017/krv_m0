@@ -35,9 +35,10 @@ output wire dec_ready,						// indication of DEC stage is ready
 input wire [`INSTR_WIDTH - 1 : 0] instr_dec,			// instruction at dec stage
 input wire [`ADDR_WIDTH - 1 : 0] pc_dec,			// pc propagated from IF stage
 output wire fence_dec,						// fence
-output reg jal_ex, 						// jal
 output reg jalr_ex,						// jalr
+output wire jal_dec,						// jal
 output reg signed [`DATA_WIDTH - 1 : 0] imm_ex,			// imm at EX stage
+output wire signed [`DATA_WIDTH - 1 : 0] imm_dec,		// imm at DEC stage
 
 //interface with alu
 output reg dec_valid,
@@ -388,7 +389,6 @@ gprs u_gprs(
 
 );
 
-wire signed [`DATA_WIDTH - 1 : 0] imm_dec;			// imm at DEC stage
 //imm generation block
 imm_gen imm_gen_inst (
 .instr 		(valid_instr_mux),
@@ -420,7 +420,7 @@ assign rs1_dec = {1'b0,rs1};
 assign rs2_dec = {1'b0,rs2};
 
 wire dec_stall;
-wire jal_dec = instruction_is_jal && !dec_stall;
+assign jal_dec = instruction_is_jal && !dec_stall;
 wire jalr_dec = instruction_is_jalr && !dec_stall;
 
 wire only_src2_used_dec = instruction_is_lui | mcsr_rd | instruction_is_jal | instruction_is_jalr; //to alu for calculation 
@@ -522,8 +522,9 @@ end
 //3: pass signals from DEC to EX stage
 //---------------------------------------------------------------------------//
 
+//reg jal_ex; 
 //dec flush condition
-wire flush_dec = branch_taken_ex | jal_ex | jalr_ex | exception_met ;
+wire flush_dec = branch_taken_ex | jalr_ex | exception_met ;
 
 //for alu 
 always @ (posedge cpu_clk or negedge cpu_rstn)
@@ -708,7 +709,7 @@ begin
 		mem_B_ex <= 1'b0;
 		mem_U_ex <= 1'b0;
 		pc_ex <= 0;
-		jal_ex <= 1'b0;
+		//jal_ex <= 1'b0;
 		jalr_ex <= 1'b0;
 		pre_instr_is_load <= 1'b0;
 	end
@@ -725,7 +726,7 @@ begin
 				mem_B_ex <= (instruction_is_load | instruction_is_store) & (funct3_lsb | funct3_lbu); 
 				mem_U_ex <= (instruction_is_load | instruction_is_store) & (funct3_lhu | funct3_lbu); 
 				pc_ex <= pc_dec;
-				jal_ex <= jal_dec;
+				//jal_ex <= jal_dec;
 				jalr_ex <= jalr_dec;
 			end
 			else
@@ -737,7 +738,7 @@ begin
 				mem_B_ex <= 1'b0;
 				mem_U_ex <= 1'b0;
 				pc_ex <= pc_ex;
-				jal_ex <= 1'b0;
+				//jal_ex <= 1'b0;
 				jalr_ex <= 1'b0;
 			end
 		end   
@@ -1010,6 +1011,16 @@ assign fence_stall = fence_d1;
 //stall condition met in DEC stage
 assign dec_stall = wfi_stall || load_hazard_stall || fence_stall;
 assign dec_ready = !dec_stall && (ex_ready);
+
+//performance counter
+wire [31:0] wfi_stall_cnt;
+en_cnt u_wfi_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(wfi_stall), .cnt (wfi_stall_cnt));
+
+wire [31:0] load_hazard_stall_cnt;
+en_cnt u_load_hazard_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(load_hazard_stall), .cnt (load_hazard_stall_cnt));
+
+wire [31:0] fence_stall_cnt;
+en_cnt u_fence_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(fence_stall), .cnt (fence_stall_cnt));
 
 endmodule
 
