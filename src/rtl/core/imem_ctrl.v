@@ -85,7 +85,7 @@ begin
 	else
 	begin
 		addr_itcm_r <= addr_itcm;
-		addr_dtcm_r <= addr_itcm;
+		addr_dtcm_r <= addr_dtcm;
 		addr_AHB_r <= addr_AHB;
 	end
 end
