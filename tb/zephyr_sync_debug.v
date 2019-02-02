@@ -18,9 +18,9 @@ wire st_data = DUT.u_core.u_dmem_ctrl.store_data_mem;
 
 always @(posedge cpu_clk)
 begin
-	if((mem_addr==32'h400a0) && mem_st)
+	if((mem_addr==32'h40000) && mem_st)
 	begin
-		$display ("write to mem 400a0");
+		$display ("write to mem 40000");
 		$display ("@time %t  !",$time);
 		$display ("write data = %h",st_data);
 		$display ("\n");
@@ -47,7 +47,7 @@ begin
 #5;
 $display ("=========================================================================== \n");
 $display ("Here is a trick to force the baud rate higher to make the simulation faster \n");
-$display ("you can turn off the trick in tb/zephyr_debug.v by comment the force \n");
+$display ("you can turn off the trick in tb/zephyr_sync_debug.v by comment the force \n");
 $display ("=========================================================================== \n");
 force DUT.m_apb.uart_0.uart_0.baud_val = 13'h4;
 end

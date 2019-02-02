@@ -151,8 +151,10 @@ wire 					mem_U_mem;
 wire [`DATA_WIDTH - 1 : 0]		store_data_mem;
 wire [`ADDR_WIDTH - 1 : 0]		mem_addr_mem;
 wire 					mem_wb_data_valid;
+wire 					non_single_load;
 
 wire [`RD_WIDTH:0] 			rd_wb;
+wire [`RD_WIDTH:0] 			rd_wb_i;
 wire signed [`DATA_WIDTH - 1 : 0]	wr_data_wb;					
 wire 					wr_valid_wb;
 wire [`DATA_WIDTH - 1 : 0]		alu_result_wb;				
@@ -360,9 +362,11 @@ dec u_dec (
 .imm_dec		(imm_dec),
 .data_mem		(data_mem),
 .rd_mem			(rd_mem ),	
+.non_single_load		(non_single_load),
 .mem_wb_data_valid	(mem_wb_data_valid),
 .load_mem		(load_mem),
 .rd_wb			(rd_wb ),	
+.rd_wb_i			(rd_wb_i ),	
 .wr_valid_wb		(wr_valid_wb ),	
 .wr_data_wb		(wr_data_wb),
 .mcsr_addr		(mcsr_addr),
@@ -448,6 +452,8 @@ alu u_alu (
 dmem_ctrl u_dmem_ctrl (
 .cpu_clk			(cpu_clk ),				
 .cpu_rstn			(comb_rstn),				
+.load_ex		(load_ex),
+.store_ex		(store_ex),
 .load_mem			(load_mem),
 .store_mem			(store_mem),
 .mem_H_mem			(mem_H_mem),
@@ -460,6 +466,7 @@ dmem_ctrl u_dmem_ctrl (
 .mem_ready			(mem_ready),		
 .data_mem			(data_mem),
 .mem_wb_data_valid	(mem_wb_data_valid),
+.non_single_load_d1		(non_single_load),
 .rd_mem				(rd_mem),		
 .wb_ready			(wb_ready),		
 .load_wb 			(load_wb),			
@@ -468,6 +475,7 @@ dmem_ctrl u_dmem_ctrl (
 .load_data_wb			(load_data_wb ),				
 .load_data_valid_wb		(load_data_valid_wb ),				
 .rd_wb				(rd_wb ),	
+.rd_wb_i			(rd_wb_i ),	
 
 .data_itcm_access		(data_itcm_access),
 .data_itcm_ready		(data_itcm_ready),

@@ -12,6 +12,22 @@ wire uart_tx_wr = !(DUT.m_apb.uart_0.uart_0.WEn || DUT.m_apb.uart_0.uart_0.csn);
 wire[7:0] uart_tx_data = DUT.m_apb.uart_0.uart_0.data_in;
 
 
+wire [31:0] mem_addr = DUT.u_core.u_dmem_ctrl.mem_addr;
+wire mem_st = DUT.u_core.u_dmem_ctrl.store_mem;
+wire st_data = DUT.u_core.u_dmem_ctrl.store_data_mem;
+
+always @(posedge cpu_clk)
+begin
+	if((mem_addr==32'h40000) && mem_st)
+	begin
+		$display ("write to mem 40000");
+		$display ("@time %t  !",$time);
+		$display ("write data = %h",st_data);
+		$display ("\n");
+	end
+end
+
+
 //Play a trick to let the simulation run faster
 
 initial

@@ -29,6 +29,8 @@ input wire cpu_clk,						//cpu clock
 input wire cpu_rstn,						//cpu reset, active low
 
 //interface with ALU
+input load_ex,							//load at EX stage
+input store_ex,							//store at EX stage
 input load_mem,							//load at MEM stage
 input store_mem,						//store at MEM stage
 input wire mem_H_mem,						//halfword access at MEM stage
@@ -42,7 +44,8 @@ input wire ex_valid,						//alu result valid signal at MEM stage
 output wire mem_ready,
 
 //interface with wb_ctrl
-output reg [`RD_WIDTH:0] rd_wb,					//rd at WB stage
+output wire [`RD_WIDTH:0] rd_wb,					//rd at WB stage
+output reg [`RD_WIDTH:0] rd_wb_i,
 output reg [`DATA_WIDTH - 1 : 0] alu_result_wb,			//alu result at WB stage	       	
 output reg alu_result_valid_wb,		       			//alu result valid signal at WB stage	 	
 output reg load_wb,						//load at WB stage
@@ -51,6 +54,7 @@ output reg load_data_valid_wb,					//load data valid at WB stage
 input wire wb_ready,
 
 //interface with dec
+output reg non_single_load_d1,
 output wire mem_wb_data_valid,			 
 output wire [`DATA_WIDTH - 1 : 0] data_mem,		//forwarding result at MEM stage back to DEC stage 
 
@@ -108,6 +112,27 @@ assign addr_itcm = (mem_addr >= `ITCM_START_ADDR) && (mem_addr < `ITCM_START_ADD
 assign addr_dtcm = dtcm_en && (mem_addr >= dtcm_start_addr) && (mem_addr < (dtcm_start_addr + `DTCM_SIZE));
 assign addr_AHB = ~(addr_dtcm | addr_itcm);
 
+reg addr_itcm_r;
+reg addr_dtcm_r;
+reg addr_AHB_r;
+
+always @ (posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
+		addr_itcm_r <= 1'b0;
+		addr_dtcm_r <= 1'b0;
+		addr_AHB_r <= 1'b0;
+	end
+	else
+	begin
+		addr_itcm_r <= addr_itcm;
+		addr_dtcm_r <= addr_dtcm;
+		addr_AHB_r <= addr_AHB;
+	end
+end
+
+
 //-----------------//
 //Store
 //-----------------//
@@ -121,6 +146,27 @@ assign mem_byte_strobe = mem_B_mem ? (4'b0001<<mem_addr[1:0]) : //for byte acces
 			(mem_H_mem ? (4'b0011<<2*mem_addr[1]) : //for half-word access
 			4'b1111);					   //for word access
 
+reg mem_U_mem_r;
+reg mem_B_mem_r;
+reg mem_H_mem_r;
+reg [3:0] mem_byte_strobe_r;
+always @ (posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(!cpu_rstn)
+	begin
+		mem_byte_strobe_r <= 4'h0;
+		mem_U_mem_r <= 1'b0;
+		mem_H_mem_r <= 1'b0;
+		mem_B_mem_r <= 1'b0;
+	end
+	else
+	begin
+		mem_byte_strobe_r <= mem_byte_strobe;
+		mem_U_mem_r <= mem_U_mem;
+		mem_H_mem_r <= mem_H_mem;
+		mem_B_mem_r <= mem_B_mem;
+	end
+end
 
 assign rd0_wr1 = store_mem;
 
@@ -185,9 +231,9 @@ wire [`DATA_WIDTH - 1 : 0] mem_read_data;
 assign mem_read_data = data_dtcm_read_data_valid ? data_dtcm_read_data : (DAHB_read_data_valid ? DAHB_read_data : (data_itcm_read_data_valid ? data_itcm_read_data : {`DATA_WIDTH{1'b0}}));
 
 wire load_data_sign_bit;
-assign load_data_sign_bit = mem_byte_strobe[3]? mem_read_data[31] : 
-			   (mem_byte_strobe[2]? mem_read_data[23] : 
-			   (mem_byte_strobe[1]? mem_read_data[15] :
+assign load_data_sign_bit = mem_byte_strobe_r[3]? mem_read_data[31] : 
+			   (mem_byte_strobe_r[2]? mem_read_data[23] : 
+			   (mem_byte_strobe_r[1]? mem_read_data[15] :
 			    			mem_read_data[7]));
 
 //generate read data for load
@@ -199,7 +245,7 @@ reg [`DATA_WIDTH - 1 : 0] mem_wb_data_for_lhu;
 
 always @ *
 begin
-	case(mem_byte_strobe)
+	case(mem_byte_strobe_r)
 		4'b0001: mem_wb_data_for_lb = {{24{load_data_sign_bit}}, mem_read_data[7:0]};
 		4'b0010: mem_wb_data_for_lb = {{24{load_data_sign_bit}}, mem_read_data[15:8]};
 		4'b0100: mem_wb_data_for_lb = {{24{load_data_sign_bit}}, mem_read_data[23:16]};
@@ -210,7 +256,7 @@ end
 
 always @ *
 begin
-	case(mem_byte_strobe)
+	case(mem_byte_strobe_r)
 		4'b0001: mem_wb_data_for_lbu = {{24{1'b0}}, mem_read_data[7:0]};
 		4'b0010: mem_wb_data_for_lbu = {{24{1'b0}}, mem_read_data[15:8]};
 		4'b0100: mem_wb_data_for_lbu = {{24{1'b0}}, mem_read_data[23:16]};
@@ -221,7 +267,7 @@ end
 
 always @ *
 begin
-	case(mem_byte_strobe)
+	case(mem_byte_strobe_r)
 		4'b0011: mem_wb_data_for_lh = {{16{load_data_sign_bit}}, mem_read_data[15:0]};
 		4'b1100: mem_wb_data_for_lh = {{16{load_data_sign_bit}}, mem_read_data[31:16]};
 		default: mem_wb_data_for_lh = {`DATA_WIDTH{1'b0}};
@@ -230,7 +276,7 @@ end
 
 always @ *
 begin
-	case(mem_byte_strobe)
+	case(mem_byte_strobe_r)
 		4'b0011: mem_wb_data_for_lhu = {{16{1'b0}}, mem_read_data[15:0]};
 		4'b1100: mem_wb_data_for_lhu = {{16{1'b0}}, mem_read_data[31:16]};
 		default: mem_wb_data_for_lhu = {`DATA_WIDTH{1'b0}};
@@ -240,9 +286,9 @@ end
 
 always @ *
 begin
-	if (mem_U_mem)
+	if (mem_U_mem_r)
 	begin
-		case ({mem_H_mem,mem_B_mem})
+		case ({mem_H_mem_r,mem_B_mem_r})
 		2'b00: mem_wb_data = mem_read_data;		 //for word access
 		2'b01: mem_wb_data = mem_wb_data_for_lbu;	 //for byte access
 		2'b10: mem_wb_data = mem_wb_data_for_lhu;	 //for half-word access
@@ -251,7 +297,7 @@ begin
 	end
 	else
 	begin
-		case ({mem_H_mem,mem_B_mem})
+		case ({mem_H_mem_r,mem_B_mem_r})
 		2'b00: mem_wb_data = mem_read_data;		 //for word access
 		2'b01: mem_wb_data = mem_wb_data_for_lb;	 //for byte access
 		2'b10: mem_wb_data = mem_wb_data_for_lh;	 //for half-word access
@@ -261,7 +307,7 @@ begin
 
 end
 
-assign mem_wb_data_valid = (addr_dtcm && data_dtcm_read_data_valid) | (addr_AHB && DAHB_read_data_valid) | (addr_itcm &&  data_itcm_read_data_valid);
+assign mem_wb_data_valid = (addr_dtcm_r && data_dtcm_read_data_valid) | (addr_AHB_r && DAHB_read_data_valid) | (addr_itcm_r &&  data_itcm_read_data_valid);
 
  
 //--------------------------------------------//
@@ -295,29 +341,52 @@ begin
 	end
 end
 
+reg [`RD_WIDTH:0] rd_wb_d;
 always@(posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(~cpu_rstn)
 	begin
-		rd_wb <= {1'b0,{`RD_WIDTH{1'b0}}};
+		rd_wb_i <= {1'b0,{`RD_WIDTH{1'b0}}};
+		rd_wb_d <= {1'b0,{`RD_WIDTH{1'b0}}};
 	end
 	else
 	begin
-		rd_wb <= rd_mem;
+		rd_wb_i <= rd_mem;
+		rd_wb_d <= rd_wb_i;
 	end
 end
 
+reg load_wb_i;
+reg load_wb_d;
 always@(posedge cpu_clk or negedge cpu_rstn)
 begin
 	if(~cpu_rstn)
 	begin
-		load_wb <= 1'b0;
+		load_wb_i <= 1'b0;
+		load_wb_d <= 1'b0;
 	end
 	else
 	begin
-		load_wb <= load_mem;
+		load_wb_i <= load_mem;
+		load_wb_d <= load_wb_i;
 	end
 end
+
+reg mem_wb_data_valid_d1;
+always@(posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(~cpu_rstn)
+	begin
+		mem_wb_data_valid_d1 <= 1'b0;
+	end
+	else
+	begin
+		mem_wb_data_valid_d1 <= mem_wb_data_valid;
+	end
+end
+wire select_d 	= mem_wb_data_valid && mem_wb_data_valid_d1;
+assign rd_wb 	= select_d ? rd_wb_d : rd_wb_i;
+assign load_wb	= select_d ? load_wb_d : load_wb_i;
 
 //--------------------------------------------//
 //forwarding data to dec for data dependency
@@ -327,6 +396,21 @@ assign data_mem = load_mem? mem_wb_data : alu_result_mem;
 //--------------------------------------------//
 //MEM stage stall condition 
 //--------------------------------------------//
+wire single_load = load_mem && (addr_AHB || !load_ex);
+wire non_single_load = (!addr_AHB) && load_mem && (load_ex);
+always@(posedge cpu_clk or negedge cpu_rstn)
+begin
+	if(~cpu_rstn)
+	begin
+		non_single_load_d1 <= 1'b0;
+	end
+	else
+	begin
+		non_single_load_d1 <= non_single_load;
+	end
+end
+wire non_single_load_fall = non_single_load_d1 && (!non_single_load);
+
 reg load_wait_data;
 always@(posedge cpu_clk or negedge cpu_rstn)
 begin
@@ -340,7 +424,7 @@ begin
 		begin
 			load_wait_data <= 1'b0;
 		end
-		else if(load_mem)
+		else if(single_load || non_single_load_fall)
 		begin
 			load_wait_data <= 1'b1;
 		end
@@ -367,7 +451,7 @@ begin
 	end
 end
 
-wire load_stall = (load_mem & (!mem_wb_data_valid));
+wire load_stall = (single_load & (!mem_wb_data_valid)) || non_single_load_fall;
 wire store_stall = (store_mem && ((addr_AHB && DAHB_trans_buffer_full) || (addr_dtcm && !data_dtcm_ready)));
 
 wire dmem_stall =  load_stall || store_stall;

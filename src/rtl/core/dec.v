@@ -83,6 +83,7 @@ output reg [`RD_WIDTH:0] rd_ex, 				// propagate rd to EX stage
 output reg [`ADDR_WIDTH - 1 : 0] pc_ex,				// propagate pc to EX stage
 
 //interface with dmem_ctrl
+input wire non_single_load,
 input wire load_mem,
 input wire [`RD_WIDTH:0] rd_mem,				// rd at MEM stage	
 input wire[`DATA_WIDTH - 1 : 0]  data_mem,			// forward result at MEM stage
@@ -92,6 +93,7 @@ input wire mem_wb_data_valid,
 input wire wr_valid_wb,						// gprs write valid at WB stage
 input wire[`DATA_WIDTH - 1 : 0]  wr_data_wb,			// gprs write data at WB stage
 input wire [`RD_WIDTH:0] rd_wb,					// rd at WB stage
+input wire [`RD_WIDTH:0] rd_wb_i,				// rd at WB stage when mem data valid
 
 //interface with stall_fulsh_ctrl
 output wire mret,						// mret
@@ -447,7 +449,7 @@ begin
 			begin
 				src_data1_dec = alu_result_ex;
 			end
-			else if (rs1_dec == rd_mem)
+			else if ((rs1_dec == rd_mem) || (non_single_load && (rs1_dec == rd_wb_i)))
 			begin
 				src_data1_dec = data_mem;
 			end
@@ -479,7 +481,7 @@ always @ *
 		begin
 			gprs_data2_mux = alu_result_ex;
 		end
-		else if (rs2_dec == rd_mem)
+		else if ((rs2_dec == rd_mem) || (non_single_load && (rs2_dec == rd_wb_i)))
 		begin
 			gprs_data2_mux = data_mem;
 		end
@@ -894,8 +896,8 @@ assign load_hazard_2nd =(((rs1_wait_load_2nd || rs2_wait_load_2nd )) ) && (!mret
 reg [5:0] hazard_rd_1st_r;
 reg [5:0] hazard_rd_2nd_r;
 
-wire load_hazard_stall_1st = (load_hazard_1st || load_hazard_1st_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r)));
-wire load_hazard_stall_2nd = (load_hazard_2nd || load_hazard_2nd_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_2nd_r)));
+wire load_hazard_stall_1st = (load_hazard_1st || load_hazard_1st_r) && (!(mem_wb_data_valid && (rd_wb_i == hazard_rd_1st_r)));
+wire load_hazard_stall_2nd = (load_hazard_2nd || load_hazard_2nd_r) && (!(mem_wb_data_valid && (rd_wb_i == hazard_rd_2nd_r)));
 
 //assign load_hazard = load_hazard_1st || load_hazard_2nd;
 //assign load_hazard_stall = (load_hazard || load_hazard_r) && (!(mem_wb_data_valid && (rd_wb == hazard_rd_r)));  
@@ -938,7 +940,7 @@ begin
 		load_hazard_1st_r <= 1'b0;
 		hazard_rd_1st_r <= 6'h32;
 	end
-	else if(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r))
+	else if(mem_wb_data_valid && (rd_wb_i == hazard_rd_1st_r))
 	begin
 		load_hazard_1st_r <= 1'b0;
 		hazard_rd_1st_r <= 6'h32;
@@ -957,7 +959,7 @@ begin
 		load_hazard_2nd_r <= 1'b0;
 		hazard_rd_2nd_r <= 6'h32;
 	end
-	else if(mem_wb_data_valid && (rd_wb == hazard_rd_2nd_r))
+	else if(mem_wb_data_valid && (rd_wb_i == hazard_rd_2nd_r))
 	begin
 		load_hazard_2nd_r <= 1'b0;
 		hazard_rd_2nd_r <= 6'h32;
@@ -976,7 +978,7 @@ begin
 	begin
 		pre_instr_is_load_r <= 1'b0;
 	end
-	else if(mem_wb_data_valid && (rd_wb == hazard_rd_1st_r))
+	else if(mem_wb_data_valid && (rd_wb_i == hazard_rd_1st_r))
 	begin
 		pre_instr_is_load_r <= 1'b0;
 	end
