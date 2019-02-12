@@ -1,8 +1,15 @@
 # krv_m0
 
 1: Introduction
+KRV-m0 is a RISCV-based 32-bit micro-controller subsystem. It consists of a RISCV processor Core with two tightly coupled memories for instruction and data acceleration, a machine timer and a platform level interrupt controller (KPLIC) for timer and external interrupts respectively and lite AHB interconnection with some APB peripherals.  krv_m0 uses clock-gating, operands gating and power gating to control power consumption. 
+More details can be found in DOC dir: 
+https://github.com/wangk2017/krv_m0/blob/master/DOC
 
-The krv_m0 is a RISCV 32-bit micro-controller subsystem. It consists of a riscv 32-b 5-stage pipeline CPU Core with two tightly-coupled-memory for instruction/data acceleration, a platform level interrupt controller (KPLIC) and standard AHB interconnect for easy application-related extensions. The KRV-m core uses clock/operand gating and power gating technology to save power.
+
+Block Diagram
+
+![krv_m0 block diagram](https://github.com/wangk2017/krv_m0/blob/master/img_dir/krv_m0%20block%20diagram.png)
+
 
 
 2: Tools Setup
@@ -32,133 +39,39 @@ Firstly, please update the Makefile zephyr_dir and riscv_test_dir with your loca
 
 krv_m0 uses the riscv-tests rv32ui for compliance check
 
-	$ git clone https://github.com/riscv/riscv-tests
-	
-	$ cd riscv-tests
-	
-	$ git submodule update --init --recursive
-
-Hack the env/p/link.ld with text start from 0x00000000
-
-  . = 0x00000000;
-  .text.init : { *(.text.init) }
-  
-	cd isa
-	
-	make rv32ui XLEN=32
-
-revert the hack in env/p/link.ld
-
-go to the krv_m0 dir
-
-	make all_riscv_hex
+https://github.com/riscv/riscv-tests
 
 edit tb/sim_inc/tb_defines.vh with all commented except riscv
 
+	make comp
 	make all_riscv_tests
 
 The TB will check the value of gp(GPRS3), if it is 0x1 after entering write_tohost, it will display Pass, or it will display Fail.
 
-All the sim log will be found in out/
 
 
+(2) Boot OS Zephyr applications (Hello world/philosopher/synchronization)
 
-(2) Zephyr Hello world
+krv_m0 test uses the board m2gl025_miv for some tiny setting changes for clock frequency, baud rate and ROM start address.
 
-krv_m0 test uses the board m2gl025_miv for some tiny setting changes.
-
-In {ZEPHYR_DIR}/boards/riscv32/m2gl025_miv/board.h 
-
-	#define uart_miv_port_0_clk_freq    25000000
-
-In {ZEPHYR_DIR}/boards/riscv32/m2gl025_miv/m2gl025_miv_defconfig
-
-	CONFIG_UART_MIV_PORT_0_BAUD_RATE=9600
-
-In {ZEPHYR_DIR}/soc/riscv32/riscv-privilege/miv/Kconfig.defconfig.series
-
-	config RISCV_ROM_BASE_ADDR
-	hex
-	default 0x00000000
-
-Compile zephyr
-
-	cd samples/hello_world/
-
-	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
-
-	cd build
-
-	ninja
-
-Run simulation
-
-Go back to krv_m0
-
-	make zephyr.hex
-
-edit tb/sim_inc/tb_defines.vh with all commented except zephyr 
+edit tb/sim_inc/tb_defines.vh with all commented except zephyr for hello world (or zephyr_phil for philosopher or zephyr_sync for synchronization) 
 
 	make comp
 
 	make zephyr.sim
-
-the output is stored in out/uart_tx_data.txt
-
-
-(3) Zephyr philosopher
-
-Compile zephyr
-
-	cd samples/philosopher/
+or
 	
-	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
-	
-	cd build
-	
-	ninja
-
-Run simulation
-
-Go back to krv_m0
-
-	make zephyr_phil.hex
-
-edit tb/sim_inc/tb_defines.vh with all commented except zephyr_phil
-
-	make comp
-
 	make zephyr_phil.sim
 
-the output is stored in out/uart_tx_data_phil.txt
+or
 
-(4) Zephyr synchronization
-
-Compile zephyr
-
-	cd samples/synchronization/
-	
-	cmake -GNinja -Bbuild -H. -DBOARD=m2gl025_miv
-	
-	cd build
-	
-	ninja
-
-Run simulation
-
-Go back to krv_m0
-
-	make zephyr_sync.hex
-
-edit tb/sim_inc/tb_defines.vh with all commented except zephyr_sync
-
-	make comp
-	
 	make zephyr_sync.sim
+	
+the output is stored in out/uart_tx_data.txt for hello world and out/uart_tx_data_phil.txt for philosopher and out/uart_tx_data_sync.txt for synchronization
 
-the output is stored in out/uart_tx_data_sync.txt
 
-(5) Dhrystone
+
+(3) Run benchmark of Dhrystone
 
 edit tb/sim_inc/tb_defines.vh with all commented except dhrystone
 
@@ -166,7 +79,7 @@ edit tb/sim_inc/tb_defines.vh with all commented except dhrystone
 	
 	make dhrystone.sim
 
-the output is stored in out/uart_tx_data_dhrystone.txt
+the result is stored in out/uart_tx_data_dhrystone.txt
 
 
 4: RUN FPGA
