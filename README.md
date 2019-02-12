@@ -2,6 +2,7 @@
 
 1: Introduction
 KRV-m0 is a RISCV-based 32-bit micro-controller subsystem. It consists of a RISCV processor Core with two tightly coupled memories for instruction and data acceleration, a machine timer and a platform level interrupt controller (KPLIC) for timer and external interrupts respectively and lite AHB interconnection with some APB peripherals.  krv_m0 uses clock-gating, operands gating and power gating to control power consumption. 
+
 More details can be found in DOC dir: 
 https://github.com/wangk2017/krv_m0/blob/master/DOC
 
