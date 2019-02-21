@@ -202,18 +202,23 @@ assign itcm_byte_strobe = auto_load_wr? auto_load_byte_strobe : data_itcm_byte_s
 
 
 wire [14 : 2 ] itcm_word_addr_wr = itcm_write_addr_from_0[14 : 2 ];
-wire [`ADDR_WIDTH - 1 : 0 ] itcm_addr_rd = data_itcm_access ? data_itcm_addr : instr_itcm_addr;
-wire [`ADDR_WIDTH - 1 : 0 ] itcm_addr_rd_from_0 = itcm_addr_rd - `ITCM_START_ADDR;
-wire [14 : 2 ] itcm_word_addr_rd = itcm_addr_rd_from_0[14 : 2 ];
+
+wire [`ADDR_WIDTH - 1 : 0 ] instr_itcm_addr_rd_from_0 = instr_itcm_addr - `ITCM_START_ADDR;
+wire [14 : 2 ] instr_itcm_word_addr_rd = instr_itcm_addr_rd_from_0[14 : 2 ];
+
+wire [`ADDR_WIDTH - 1 : 0 ] data_itcm_addr_rd_from_0 = data_itcm_addr - `ITCM_START_ADDR;
+wire [14 : 2 ] data_itcm_word_addr_rd = data_itcm_addr_rd_from_0[14 : 2 ];
+
 `ifndef SIM
-wire [`DATA_WIDTH - 1 : 0] itcm_read_data;
 sram_4Kx32 itcm (
     .CLK	(clk),
-    .RADDR	(itcm_word_addr_rd),
+    .RADDR1	(instr_itcm_word_addr_rd),
+    .RADDR2	(data_itcm_word_addr_rd),
     .WADDR	(itcm_word_addr_wr),
     .WD		(itcm_write_data),
     .WEN	(itcm_write_en),
-    .RD		(itcm_read_data)
+    .RD1	(instr_itcm_read_data),
+    .RD2	(data_itcm_read_data)
 );
 `else
 reg [`DATA_WIDTH - 1 : 0] itcm [`ITCM_SIZE - 1:0];
@@ -232,23 +237,25 @@ begin
 	end
 end
 
-reg [`DATA_WIDTH - 1 : 0] itcm_read_data;
-
 reg itcm_read_data_valid;
 
 always @ (posedge clk or negedge rstn)
 begin
 	if(!rstn)
 	begin
-		itcm_read_data <= 32'h0;
+		instr_itcm_read_data <= 32'h0;
+		data_itcm_read_data <= 32'h0;
 	end
 	else
 	begin
-		itcm_read_data <= itcm[itcm_word_addr_rd];
+		instr_itcm_read_data <= itcm[instr_itcm_word_addr_rd];
+		data_itcm_read_data <= itcm[data_itcm_word_addr_rd];
 	end
 
 end
 `endif
+
+wire dw_same_loc_as_ir = data_itcm_access && data_itcm_rd0_wr1 && (itcm_word_addr_wr == instr_itcm_word_addr_rd);
 
 always @ (posedge clk or negedge rstn)
 begin
@@ -258,7 +265,7 @@ begin
 	end
 	else 
 	begin
-		instr_itcm_read_data_valid <= instr_itcm_access && (~data_itcm_access) && (~itcm_auto_load);
+		instr_itcm_read_data_valid <= instr_itcm_access && (~dw_same_loc_as_ir) && (~itcm_auto_load);
 	end
 end
 
@@ -273,18 +280,6 @@ begin
 		data_itcm_read_data_valid <= data_itcm_access && (~data_itcm_rd0_wr1) && (~itcm_auto_load);
 	end
 end
-
-
-always @ *
-begin
-		instr_itcm_read_data = itcm_read_data;
-end
-
-always @ *
-begin
-		data_itcm_read_data = itcm_read_data;
-end
-
 
 assign data_itcm_ready = ~itcm_auto_load;
 

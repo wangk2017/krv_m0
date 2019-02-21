@@ -51,7 +51,7 @@ input wire ex_ready,
 input wire branch_taken_ex,				// branch condition met
 
 //interface with imem_ctrl
-output wire [`ADDR_WIDTH - 1 : 0] next_pc,		// Program counter value for imem addr
+output reg [`ADDR_WIDTH - 1 : 0] next_pc,		// Program counter value for imem addr
 input wire instr_read_data_valid,			// instruction valid from imem		
 input wire [`INSTR_WIDTH - 1 : 0] instr_read_data, 	// instruction from imem
 input wire addr_AHB,
@@ -215,7 +215,32 @@ end
 
 wire  [`ADDR_WIDTH - 1 : 0] addr_adder_res_c = (branch_taken_ex_r || jal_dec_r || jalr_ex_r )? addr_adder_res_r : addr_adder_res;
 
-assign next_pc = trap ? vector_addr : ((!(dec_ready) || ((fence_dec || fence_dec_r) && !(instr_read_data_valid && dec_ready) && !branch_taken_ex))? pc: ((mret||mret_r) ? mepc : addr_adder_res_c));
+//assign next_pc = trap ? vector_addr : ((!(dec_ready) || ((fence_dec || fence_dec_r) && !(instr_read_data_valid && dec_ready) && !branch_taken_ex))? pc: ((mret||mret_r) ? mepc : addr_adder_res_c));
+wire keep_pc = ((fence_dec || fence_dec_r) && !instr_read_data_valid ) || !dec_ready ;
+always @*
+begin
+	if(trap)
+	begin
+		next_pc = vector_addr;
+	end
+	else if(branch_taken_ex)
+	begin
+		next_pc = addr_adder_res_c;
+	end
+	else if (keep_pc)
+	begin
+		next_pc = pc;
+	end
+	else if(mret || mret_r)
+	begin
+		next_pc = mepc;
+	end
+	else
+	begin
+		next_pc = addr_adder_res_c;
+	end
+end
+
 
 always @ (posedge cpu_clk or negedge cpu_rstn)
 begin
