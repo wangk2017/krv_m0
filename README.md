@@ -43,9 +43,6 @@ krv_m0 uses the riscv-tests rv32ui for compliance check
 
 https://github.com/riscv/riscv-tests
 
-edit tb/sim_inc/tb_defines.vh with all commented except riscv
-
-	make comp
 	make all_riscv_tests
 
 The TB will check the value of gp(GPRS3), if it is 0x1 after entering write_tohost, it will display Pass, or it will display Fail.
@@ -56,16 +53,15 @@ The TB will check the value of gp(GPRS3), if it is 0x1 after entering write_toho
 
 krv_m0 test uses the board m2gl025_miv for some tiny setting changes for clock frequency, baud rate and ROM start address.
 
-edit tb/sim_inc/tb_defines.vh with all commented except zephyr for hello world (or zephyr_phil for philosopher or zephyr_sync for synchronization) 
-
-	make comp
+run hello world application
 
 	make zephyr.sim
-or
+
+run philosopher application
 	
 	make zephyr_phil.sim
 
-or
+run synchronization application
 
 	make zephyr_sync.sim
 	
@@ -75,10 +71,6 @@ the output is stored in out/uart_tx_data.txt for hello world and out/uart_tx_dat
 
 (3) Run benchmark of Dhrystone
 
-edit tb/sim_inc/tb_defines.vh with all commented except dhrystone
-
-	make comp
-	
 	make dhrystone.sim
 
 the result is stored in out/uart_tx_data_dhrystone.txt

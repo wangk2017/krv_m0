@@ -1,1 +1,1 @@
-store sim out
+It is a DIR to store temppory simulation files

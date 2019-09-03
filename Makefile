@@ -57,6 +57,8 @@ veri:
 
 csr.%.sim: hex_file/csr/%.hex 
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh RISCV 
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 
@@ -64,6 +66,8 @@ all_csr_tests: csr.csrrc.sim csr.csrrs.sim csr.csrrw.sim csr.csrrci.sim csr.csrr
 
 pg.%.sim: hex_file/pg/%.hex 
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh PG_CTRL
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 
@@ -71,6 +75,8 @@ all_pg_tests: pg.simple.sim
 
 int.%.sim: hex_file/int/%.hex 
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh RISCV 
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 
@@ -79,28 +85,38 @@ all_int_tests: int.simple.sim
 
 zephyr.sim: hex_file/zephyr/zephyr.hex
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh ZEPHYR
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 	mv run.mem bin_file/$@.mem
 	
 zephyr_phil.sim: hex_file/zephyr/zephyr_phil.hex
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh ZEPHYR_PHIL
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 	
 zephyr_sync.sim: hex_file/zephyr/zephyr_sync.hex
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh ZEPHYR_SYNC
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 	
 dhrystone.sim: hex_file/dhrystone.hex
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh DHRYSTONE
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 	
 
 riscv.%.sim: hex_file/riscv/%.hex 
 	cp $< hex_file/run.hex
+	./tb/sim_inc/sim_define.sh RISCV
+	iverilog -g2009 -I ./tb -I ./tb/sim_inc -o ./out/krv ./tb/krv_m_tb.v ./tb/rom.v ./src/rtl/*/*.v ./src/Actel_DirectCore/*.v 
 	vvp -l out/$@ -v -n ./out/krv -lxt2
 	cp out/krv.vcd out/krv.lxt
 
@@ -121,6 +137,8 @@ wave:
 	gtkwave ./out/krv.lxt &
 	
 clean:
-	rm -vrf ./out/*
+	rm -vrf ./out/*.sim
+	rm -vrf ./out/krv*
+	rm -vrf ./tb/sim_inc/tb_defines.vh
 
 .PHONY: all
