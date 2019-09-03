@@ -35,7 +35,7 @@ Krv_m0 uses Microsemi_SmartFusion2. Refer to below links for tool download/insta
 
 3: Simulation
 
-Firstly, please update the Makefile zephyr_dir and riscv_test_dir with your local zephyr and riscv_tests DIR
+The hex files for simulation are already in hex_file dir, if you want to regenerate the hex files, please update the zephyr_dir and riscv_test_dir in Makefile with your local zephyr and riscv_tests DIR and run make <test_name>.hex to generate the new hex files.
 
 (1) RV32I Compliance verification
 
